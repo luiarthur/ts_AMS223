@@ -10,6 +10,6 @@ For each of the Chapter 1 datasets posted in the data dir:
 
 Comments about the homework:
 
-Problem 5: assume that $\omega_{0i}$ are fixed.
+Problem 5: assume that $\omega_0$'s are fixed.
 
 Problem 7: assume that $d=1$ and work with the conditional likelihood.
