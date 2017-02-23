@@ -29,20 +29,21 @@ legend("topleft",bg='white',
 
 # DLM:
 nTrain <- 12*8; p <- 12; k <- 2
-beetMod <- dlmModPoly(k,dV=.1, dW=c( rep(1,k-1), 1)) + 
-           dlmModSeas(p,dV=.1, dW=c( rep(1,p-2), 1))
+beetMod <- dlmModPoly(k,dV=10, dW=c( rep(1,k-1), 1)) + 
+           dlmModSeas(p,dV=10, dW=c( rep(1,p-2), 1))
 beetFilt <- dlmFilter(beet[1:nTrain], beetMod)
 beetSmooth <- dlmSmooth(beetFilt)
 
-foreMod <- beetMod
-#m0(foreMod) <- beetFilt$m[nrow(beetFilt$m),]
-m0(foreMod) <- beetSmooth$s[nrow(beetFilt$m),]
-beetFuture <- dlmForecast(foreMod,nAhead=N-nTrain)
+beetFuture <- dlmForecast(beetFilt,nAhead=N-nTrain)
 
 #plot(beet,type='l',col='steelblue',xlim=c(0,N+24),ylim=c(0,100),lwd=2)
-plot(beet,type='l',col='steelblue',xlim=c(0,N),ylim=c(0,100),lwd=2)
-new <- beetFuture$f
-#lines(c(beetSmooth$s[-1,1],new),lty=2)
-lines(c(beetFilt$f,new),lty=2)
-
+par(mfrow=c(2,1),mar=c(3,4,1,1))
+plot(beet,type='l',col=col.beet,xlim=c(0,N),ylim=c(0,100),lwd=2)
+lines(c(beetSmooth$s[-1,1],beetFuture$a),lty=2,col=col.beet)
 abline(v=nTrain,col='grey')
+
+plot(beet,type='l',col=col.beet,xlim=c(0,N),ylim=c(0,100),lwd=2)
+lines(c(beetFilt$f,beetFuture$f),lty=2,col='grey30')
+abline(v=nTrain,col='grey')
+par(mfrow=c(1,1))
+
