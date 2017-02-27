@@ -1,4 +1,10 @@
 library(dlm)
+dlmFilterDF <- function(y,mod,debug=FALSE,simplify=FALSE,delta=.8) {
+  G <- mod$GG
+  P <- G %*% (mod$C0) %*% t(G)
+  W(mod) <- P / delta 
+  dlmFilter(y,mod,debug,simplify)
+}
 
 n <- 100
 sea <- sin(1:n)
@@ -10,11 +16,14 @@ plot(y,type='l')
 abline(v=2*pi * (0:n) + 1)
 
 k <- 2; p <- 2*pi
-ntrain <- 80; dV <- 10; dW <- 1
+ntrain <- 60; dV <- 1
+#dW <- 1
 
 mod <- dlmModPoly(k,dV=dV, dW=c( rep(dW,k-1), 1)) + 
            dlmModSeas(p,dV=dV, dW=c( rep(dW,p-2), 1))
-filt <- dlmFilter(y[1:ntrain], mod)
+#filt <- dlmFilter(y[1:ntrain], mod)
+
+filt <- dlmFilterDF(y[1:ntrain], mod, delta=.85)
 s <- dlmSmooth(filt)
 
 fut <- dlmForecast(filt,nAhead=n-ntrain)
