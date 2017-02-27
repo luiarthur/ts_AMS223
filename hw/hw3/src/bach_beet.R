@@ -1,4 +1,11 @@
 library(dlm)
+dlmFilterDF <- function(y,mod,debug=FALSE,simplify=FALSE,delta=.8) {
+  G <- mod$GG
+  P <- G %*% (mod$C0) %*% t(G)
+  W(mod) <- P / delta 
+  dlmFilter(y,mod,debug,simplify)
+}
+
 comp <- read.csv("../dat/bach_beet.csv", skip=5)
 
 col.bach <- "orange"
@@ -29,9 +36,10 @@ legend("topleft",bg='white',
 
 # DLM:
 nTrain <- 12*8; p <- 12; k <- 2
-beetMod <- dlmModPoly(k,dV=10, dW=c( rep(1,k-1), 1)) + 
-           dlmModSeas(p,dV=10, dW=c( rep(1,p-2), 1))
-beetFilt <- dlmFilter(beet[1:nTrain], beetMod)
+beetMod <- dlmModPoly(k,dV=10) + #, dW=c( rep(1,k-1), 1)) + 
+           dlmModSeas(p,dV=10)  #, dW=c( rep(1,p-2), 1))
+#beetFilt <- dlmFilter(beet[1:nTrain], beetMod)
+beetFilt <- dlmFilterDF(beet[1:nTrain], beetMod, delta=1)
 beetSmooth <- dlmSmooth(beetFilt)
 
 beetFuture <- dlmForecast(beetFilt,nAhead=N-nTrain)
