@@ -6,7 +6,7 @@ dlmFilterDF <- function(y,mod,debug=FALSE,simplify=FALSE,delta=.8) {
   dlmFilter(y,mod,debug,simplify)
 }
 
-comp <- read.csv("../dat/beet_bach.csv", skip=5)
+comp <- read.csv("../dat/bach_beet.csv", skip=5)
 
 col.bach <- "orange"
 
