@@ -25,14 +25,19 @@ abline(v=ind,col='grey80',lty=2)
 lines(bach,type='l',lwd=3,pch=20,cex=.5,col=col.bach)
 
 # DLM:
-nTrain <- 12*8; p <- 12; k <- 2
-bachMod <- dlmModPoly(k,dV=10) +
-           dlmModSeas(p,dV=10)
-bachFilt <- dlmFilterDF(bach[1:nTrain], bachMod, delta=1)
-bachFuture <- dlmForecast(bachFilt,nAhead=N-nTrain)
+nTrain <- 12*11; p <- 12; k <- 2; dV <- 10; delta <- .9
+bachMod <- dlmModPoly(k,dV=dV, dW=c( rep(1,k-1), 1)) + 
+           dlmModSeas(p,dV=dV, dW=c( rep(1,p-2), 1))
 
+#bachFilt <- dlmFilterDF(bach[1:nTrain], bachMod, delta=delta)
+bachFilt <- dlmFilter(bach[1:nTrain], bachMod)
+bachFuture <- dlmForecast(bachFilt,nAhead=N-nTrain,sampleNew=10)
 
 plot(bach,type='l',col=col.bach,xlim=c(0,N),ylim=c(0,100),lwd=2)
 lines(c(bachFilt$f,bachFuture$f),lty=2,col='grey30')
-abline(v=nTrain,col='grey')
+abline(v=nTrain)
+
+bachFuture$newObs[[10]][,1]
+lapply(bachFuture$newObs, function(newobs) lines(newobs[tail(1:nTrain,N-nTrain),1]))
+
 
