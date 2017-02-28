@@ -11,14 +11,14 @@ total.years <- round(N/12)
 
 
 # DLM:
-nTrain <- 12*8; p <- 12; k <- 2; dV <- 1
-bachMod <- dlmModPoly(k, dV=dV, dW=c( rep(1,k-1), 0)) + 
-           dlmModSeas(p, dV=dV, dW=c( rep(1,p-2), 0))
+nTrain <- 12*4; p <- 12; k <- 3; dV <- 1
+bachMod <- dlmModPoly(k, dV=dV, dW=c( rep(0,k-1), 0)) + 
+           dlmModSeas(p, dV=dV, dW=c( rep(0,p-2), 0))
 
 bachFilt <- dlmFilter(bach[1:nTrain], bachMod)
 bachFuture <- dlmForecast(bachFilt,nAhead=N-nTrain)
 
-plot(0,0, xlim=c(0,N), ylim=c(0,110), type='n',bty='n',fg='grey',xaxt='n',
+plot(0,0, xlim=c(0,N), ylim=c(0,100), type='n',bty='n',fg='grey',xaxt='n',
      xlab='',ylab='Score',las=2)
 axis(1,fg='grey',at=ind,label=sapply(times[ind],function(x)substr(x,1,4)),las=1)
 abline(v=seq(1,N,by=6),col='grey80',lty=3)
@@ -32,4 +32,4 @@ lines(c(bachFilt$f,bachFuture$f),lty=2)
 Q <- sapply(bachFuture$Q, function(x) x[[1]])
 ci.lower <- bachFuture$f[,1] - sqrt(Q) * 1.96
 ci.upper <- bachFuture$f[,1] + sqrt(Q) * 1.96
-color.btwn(future_ind, ci.upper, ci.lower, from=0, to=1000,col.area=rgb(0,0,0,.1))
+color.btwn(future_ind, ci.upper, ci.lower, from=0, to=1000,col.area=rgb(0,0,0,.2))
