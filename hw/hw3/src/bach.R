@@ -11,7 +11,7 @@ total.years <- round(N/12)
 
 
 # DLM:
-nTrain <- 12*8; p <- 12; k <- 3; dV <- 1
+nTrain <- 12*8; p <- 12; k <- 2; dV <- 1
 bachMod <- dlmModPoly(k, dV=dV, dW=c( rep(1,k-1), 0)) + 
            dlmModSeas(p, dV=dV, dW=c( rep(1,p-2), 0))
 
@@ -29,6 +29,7 @@ lines(1:nTrain, bach[1:nTrain],type='l',lwd=3,pch=20,cex=.5,col=col.bach)
 lines(future_ind, bach[future_ind],type='l',lwd=3,pch=20,cex=.5,col=col.bach,lty=3)
 lines(c(bachFilt$f,bachFuture$f),lty=2)
 
+Q <- sapply(bachFuture$Q, function(x) x[[1]])
 ci.lower <- bachFuture$f[,1] - sqrt(Q) * 1.96
 ci.upper <- bachFuture$f[,1] + sqrt(Q) * 1.96
 color.btwn(future_ind, ci.upper, ci.lower, from=0, to=1000,col.area=rgb(0,0,0,.1))
