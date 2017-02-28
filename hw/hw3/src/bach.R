@@ -29,18 +29,10 @@ nTrain <- 12*8; p <- 12; k <- 2
 bachMod <- dlmModPoly(k,dV=10) +
            dlmModSeas(p,dV=10)
 bachFilt <- dlmFilterDF(bach[1:nTrain], bachMod, delta=1)
-bachSmooth <- dlmSmooth(bachFilt)
-
 bachFuture <- dlmForecast(bachFilt,nAhead=N-nTrain)
 
-#plot(bach,type='l',col='steelblue',xlim=c(0,N+24),ylim=c(0,100),lwd=2)
-par(mfrow=c(2,1),mar=c(3,4,1,1))
-plot(bach,type='l',col=col.bach,xlim=c(0,N),ylim=c(0,100),lwd=2)
-lines(c(bachSmooth$s[-1,1],bachFuture$a),lty=2,col=col.bach)
-abline(v=nTrain,col='grey')
 
 plot(bach,type='l',col=col.bach,xlim=c(0,N),ylim=c(0,100),lwd=2)
 lines(c(bachFilt$f,bachFuture$f),lty=2,col='grey30')
 abline(v=nTrain,col='grey')
-par(mfrow=c(1,1))
 
