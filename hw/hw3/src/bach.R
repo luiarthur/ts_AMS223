@@ -32,11 +32,4 @@ Q <- sapply(bachFuture$Q, function(x) x[[1]])
 lines(future_ind,bachFuture$f[,1] - sqrt(Q) * 1.96, lty=2)
 lines(future_ind,bachFuture$f[,1] + sqrt(Q) * 1.96, lty=2)
 
-#bachFuture$newObs[[1]][,1]
-#bachFuture <- dlmForecast(bachFilt,nAhead=N-nTrain,sampleNew=1000)
-#pred <- sapply(bachFuture$newObs, function(newobs) newobs[,1])
-#ci <- apply(pred,1,quantile,c(.025,.975))
-#lines(ind, ci[1,])
-#lines(ind, ci[2,])
-#lines(ind, apply(pred,1,mean), col='blue',lwd=2)
 
