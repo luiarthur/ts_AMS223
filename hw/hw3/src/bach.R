@@ -5,7 +5,7 @@ col.bach <- "orange"
 
 times <- levels(comp[,1])
 bach <- comp[,2]
-N <- nrow(comp)
+N <- length(bach)
 ind <- seq(1,N,by=12)
 total.years <- round(N/12)
 
