@@ -1,5 +1,5 @@
 ---
-title: "Title"
+title: "AMS 233 -- Time Series Midterm"
 author: Arthur Lui
 date: " 1 March 2017"
 geometry: margin=1in
