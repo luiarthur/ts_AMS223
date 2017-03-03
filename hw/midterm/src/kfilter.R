@@ -1,48 +1,75 @@
 kfilter <- function(y,m0=0,C0=1,n0=1,d0=1,delta=.9) {
   N <- length(y)
 
-  m <- double(N)
-  C <- double(N)
-  n <- double(N)
-  d <- double(N)
 
-  m[1] <- m0
-  C[1] <- C0
-  n[1] <- n0
-  d[1] <- d0
+  param <- as.list(1:N)
 
-  update_R <- function(C_prev,W_curr) {
-    C_prev + W_curr
-  }
 
+  update_R <- function(C_prev,W_curr) C_prev + W_curr
   update_Q <- function(R_curr) R_curr + 1
-
-  update_m <- function(m_prev, R_curr, Q_curr, y_curr) {
-    m_prev - R_curr/Q_curr * (y_curr-m_prev)
-  }
-
-  update_C <- function(R_curr,Q_curr) R_curr - R_curr^2 / Q_curr
   update_W <- function(C_prev) C_prev * (1-delta)/delta
 
-  update_n <- function(n_prev) n_curr + 1
+  update_m <- function(m_prev, R_curr, Q_curr, y_curr) {
+    m_prev + (R_curr/Q_curr) * (y_curr-m_prev)
+  }
+  update_C <- function(R_curr,Q_curr) {
+    R_curr - R_curr^2 / Q_curr
+  }
+  update_n <- function(n_prev) {
+    n_prev + 1
+  }
   update_d <- function(d_prev,y_curr,m_prev,Q_curr) {
-    d_curr + (y_curr-m_prev)^2 / Q_curr
+    d_prev + (y_curr-m_prev)^2 / Q_curr
   }
 
+  W1 <- update_W(C0)
+  R1 <- update_R(C0,W1)
+  Q1 <- update_Q(R1)
+  param[[1]] <- list(m=m0, C=C0, n=n0, d=d0, Q=Q1, R=R1)
   for (i in 2:N) {
-    W <- update_W(C[i-1])
-    R <- update_R(C[i-1],W)
+    prev <- param[[i-1]]
+
+    W <- update_W(prev$C)
+    R <- update_R(prev$C,W)
     Q <- update_Q(R)
 
-    m[i] <- update_m(m[i-1], R, Q, y[i])
-    C[i] <- update_C(R,Q)
-    n[i] <- update_n(n[i-1])
-    d[i] <- update_d(d[i-1], y[i], m[i-1], Q)
+    m <- update_m(prev$m, R, Q, y[i])
+    C <- update_C(R,Q)
+    n <- update_n(prev$n)
+    d <- update_d(prev$d, y[i], prev$m, Q)
+
+    param[[i]] <- list(m=m,C=C,n=n,d=d,Q=Q,R=R)
   }
 
-  list(m=m, C=C, n=n, d=d, y=y)
+  list(y=y, delta=delta, param=param)
 }
 
-forecast <- function(filt,nAhead) {
-  N <- length(filt$y)
+kfilter.theta <- function(filt,B=1000) {
+
+  samp <- function(param) {
+    oneSamp <- function(dummy) {
+      v <- 1 / rgamma(1, param$n/2, rate=param$d/2)
+      rnorm(1, param$m, sqrt(v*param$C))
+    }
+
+    sapply(1:B, oneSamp)
+  }
+
+  sapply(filt$param, samp)
 }
+
+
+#forecast <- function(filt,nAhead=1) {
+#  N <- length(filt$y)
+#
+#  samp <- function(param) {
+#    oneSamp <- function(dummy) {
+#      v <- 1 / rgamma(1, param$n/2, rate=param$d/2)
+#      rnorm(1, param$m, sqrt(v*param$Q))
+#    }
+#
+#    sapply(1:B, oneSamp)
+#  }
+#
+#  sapply(filt$param, samp) 
+#}
