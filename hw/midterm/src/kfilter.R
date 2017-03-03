@@ -17,8 +17,8 @@ kfilter <- function(y,m0=0,C0=1,n0=1,d0=1,delta=.9) {
   update_n <- function(n_prev) {
     n_prev + 1
   }
-  update_d <- function(d_prev,y_curr,m_prev,Q_curr) {
-    d_prev + (y_curr-m_prev)^2 / Q_curr
+  update_d <- function(d_prev,y_curr,f,Q_curr) {
+    d_prev + (y_curr-f)^2 / Q_curr
   }
 
   for (i in 1:N) {
@@ -33,19 +33,17 @@ kfilter <- function(y,m0=0,C0=1,n0=1,d0=1,delta=.9) {
     n <- update_n(prev$n)
     d <- update_d(prev$d, y[i], prev$m, Q)
 
-    param[[i]] <- list(m=m,C=C,n=n,d=d,Q=Q,R=R)
+    param[[i]] <- list(m=m,C=C,n=n,d=d,Q=Q,R=R,f=prev$m)
   }
 
   list(y=y, delta=delta, param=param, prior=prior)
 }
 
 kfilter.theta <- function(filt,B=1000) {
-  samp <- function(param) {
-    v <- 1 / rgamma(B, param$n/2, rate=param$d/2)
+  sapply(filt$param, function(param) {
+    v <-  1 / rgamma(B, param$n/2, rate=param$d/2)
     rnorm(B, param$m, sqrt(v*param$C))
-  }
-
-  sapply(filt$param, samp)
+  })
 }
 
 
@@ -53,11 +51,11 @@ ll_pred_density <- function(filt,B=1000) {
   N <- length(filt$y)
   param <- filt$param
 
-  ll <- sapply(2:N, function(i) {
+  ll <- sapply(1:N, function(i) {
     p <- param[[i]]
-    m_prev <- param[[i-1]]$m
-    v <- 1 / rgamma(B, p$n/2, rate=p$d/2)
-    dnorm(filt$y[i], m_prev, sqrt(v*p$Q), log=TRUE)
+    prev <- if (i>1) param[[i-1]] else filt$prior
+    v <- 1 / rgamma(B, prev$n/2, rate=prev$d/2)
+    dnorm(filt$y[i], p$f, sqrt(v*p$Q), log=TRUE)
   })
 
   return(apply(ll,1,sum))
