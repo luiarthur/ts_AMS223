@@ -1,3 +1,5 @@
+last <- function(x) x[length(x)]
+
 kfilter_t <- function(y,m0=0,C0=1,n0=1,d0=1,delta=.9) {
   N <- length(y)
   param <- as.list(1:N)
@@ -33,5 +35,5 @@ ll_pred_density_t <- function(filt) {
   n <- sapply(filt$param, function(x) x$n)
   T01 <- (y - f) / sqrt(Q)
 
-  sum(dt(T01, df=n-1, log=TRUE))
+  sum(dt(T01, df=n-1, log=TRUE)-log(Q)/2) 
 }

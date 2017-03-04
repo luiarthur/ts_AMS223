@@ -3,17 +3,19 @@ source("kfilter_t.R")
 
 library(rcommon)
 last <- function(x) x[length(x)]
+plot100 <- function(x,...) plot(x/100,...)
+lines100 <- function(x,...) lines(x/100,...)
 
 usuk <- c(read.csv("../dat/usuk.dat")[,1]) / 100
 
-plot(usuk,type='o',pch=20)
+plot100(usuk,type='p',cex=.5)
 filt <- kfilter_t(usuk,m0=0,C0=1,n0=1,d0=.01,delta=.8)
-lines(sapply(filt$param, function(p) p$f), lty=2)
+lines100(sapply(filt$param, function(p) p$f), lty=2)
 filt <- kfilter_t(usuk,m0=0,C0=1,n0=1,d0=.01,delta=1)
-lines(sapply(filt$param, function(p) p$f), lty=1)
+lines100(sapply(filt$param, function(p) p$f), lty=1)
 
-delta_grid_size <- 5
-delta_grid <- seq(.6,1,len=delta_grid_size)
+#delta_grid <- seq(.6,1,len=5)
+delta_grid <- seq(0,1,by=.1)
 
 lls <- sapply(delta_grid, function(d) {
   filt <- kfilter_t(usuk,m0=0,C0=1,n0=1,d0=.01,delta=d)
@@ -33,6 +35,6 @@ title(main=bquote(hat(delta) == .(delta.hat)))
 cat("LLR:\n")
 names(llr) <- delta_grid
 print(llr)
-cat(paste("\ndelta.hat: ", delta.hat),"\n")
+#cat(paste("\ndelta.hat: ", delta.hat),"\n")
 
 

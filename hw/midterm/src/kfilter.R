@@ -1,3 +1,5 @@
+last <- function(x) x[length(x)]
+
 kfilter <- function(y,m0=0,C0=1,n0=1,d0=1,delta=.9) {
   N <- length(y)
 
