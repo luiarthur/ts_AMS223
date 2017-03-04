@@ -44,22 +44,54 @@ smoothing <- function(filt) {
   C <- sapply(filt$param, function(p) p$C)
   Rvec <- sapply(filt$param, function(p) p$R)
 
-  B <- function(j) ifelse(j>0,C[j],filt$prior$m) / R[j+1]
+  B <- function(j) ifelse(j>0,C[j],filt$prior$m) / Rvec[j+1]
 
   a <- function(t,minus_k) {
     k <- -minus_k
-    if (t-k==0) m[t] else m[t-k] + B(t-k) * (a(t,-k+1) - m[t-k])
+    if (k==0) m[t] else m[t-k] + B(t-k) * (a(t,-k+1) - m[t-k])
   }
 
   R <- function(t,minus_k) {
     k <- -minus_k
-    if (t-k==0) C[t] else C[t-k] - B(t-k)^2 * (Rvec[t-k+1] - R(t,-k+1))
+    if (k==0) C[t] else C[t-k] - B(t-k)^2 * (Rvec[t-k+1] - R(t,-k+1))
   }
 
   N <- length(filt$y)
-  aa <- sapply(1:N, function(i) a(N,-i))
-  VV <- sapply(1:N, function(i) R(N,-i))
-
+  aa <- sapply((N-1):0, function(i) a(N,-i))
+  VV <- sapply((N-1):0, function(i) (S[N]/S[N-i]) * R(N,-i))
 
   list(a=aa, V=VV)
+}
+
+forecast <- function(filt, nAhead=1) {
+  N <- length(filt$y)
+  C <- sapply(filt$param, function(p) p$C)
+  m <- sapply(filt$param, function(p) p$m)
+  delta <- filt$delta
+
+  plast <- filt$param[[N]]
+
+  f <- rep(plast$m,nAhead)
+
+  W_star <- rep(NA,nAhead)
+  R <- plast$R
+  Q <- plast$Q
+  DF <- (1-delta) / delta
+  for (i in 1:nAhead) {
+    W_star[i] <- DF * R/Q
+    R <- R/Q + W_star[i]
+    Q <- R + 1
+  }
+
+  W <- plast$S * W_star
+
+  Q <- plast$C + cumsum(W) + plast$S # + p.57 W&H # FIXME
+
+  a <- function(k) if (k==0) m[N] else a(k-1)
+  R_fn <- function(k) if (k==0) C[N] else R_fn(k-1) + W[k]
+
+  aa <- sapply(1:12, a)
+  RR <- sapply(1:12, R_fn)
+
+  list(f=f, Q=Q, n=filt$param[[N]]$n, a=aa, R=RR)
 }
