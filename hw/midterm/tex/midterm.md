@@ -82,6 +82,17 @@ $$
 The initial values $(n_0,d_0)$ are chosen to be $n_0=d_0=1$ so that the prior mean
 for $v$ at time $t=0$ is 1.
 
+### Optimal Value $\hat\delta$
+
+Figure \ref{fig:delta}
+
+\beginmyfig
+\includegraphics[height=0.5\textwidth]{img/delta.pdf}
+\caption{some caption}
+\label{fig:delta}
+\endmyfig
+
+
 
 [//]: # ( example image embedding
 \beginmyfig

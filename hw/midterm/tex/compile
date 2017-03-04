@@ -8,6 +8,7 @@
 pandoc midterm.md -s -o midterm.tex
 
 pdflatex midterm.tex
+pdflatex midterm.tex
 rm -f midterm.{log,aux,nav,out,snm,toc,blg,bbl}
 rm -f midterm.tex
 

@@ -23,6 +23,7 @@ llr <- apply(lls, 2, function(k) k-lls[,ncol(lls)])
 llr_mean <- apply(llr,2,mean)
 #llr_ci <- apply(llr,2,quantile,c(.025,.975))
 
+pdf("../tex/img/delta.pdf")
 plot(delta_grid,llr_mean,type='b',col='steelblue',
      #ylim=range(llr_ci),
      lwd=3,bty='n',fg='grey',ylab='density',xlab=expression(delta),
@@ -31,6 +32,7 @@ plot(delta_grid,llr_mean,type='b',col='steelblue',
 delta.hat <- delta_grid[which.max(llr_mean)]
 abline(v=delta.hat,col='grey',lwd=2)
 title(main=bquote(hat(delta) == .(delta.hat)))
+dev.off()
 
 
 # Analysis
