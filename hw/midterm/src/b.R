@@ -1,4 +1,4 @@
-set.seed(223)
+#set.seed(223)
 source("kfilter.R")
 library(rcommon)
 
@@ -15,18 +15,20 @@ label <- c('2004', sapply(t_axis[ind],function(x)substr(x,1,4)))
 delta_grid_size <- 50
 delta_grid <- seq(.5,.99,len=delta_grid_size)
 lls <- sapply(delta_grid, function(d) {
-  filt <- kfilter(ucsc,delta=d,m0=50,C0=100)
+  filt <- kfilter(ucsc,delta=d,m0=50,C0=100,n0=4,d0=100)
   ll_pred_density(filt,B=1000)
 })
-lls_mean <- apply(lls,2,mean)
-lls_ci <- apply(lls,2,quantile,c(.025,.975))
 
-plot(delta_grid,lls_mean,type='b',col='steelblue',ylim=range(lls_ci),
+llr <- apply(lls, 2, function(k) k-lls[,ncol(lls)])
+llr_mean <- apply(llr,2,mean)
+#llr_ci <- apply(llr,2,quantile,c(.025,.975))
+
+plot(delta_grid,llr_mean,type='b',col='steelblue',
+     #ylim=range(llr_ci),
      lwd=3,bty='n',fg='grey',ylab='density',xlab=expression(delta),
      main='Observed Predicted log Density\n\n',col.main='grey30')
-color.btwn(delta_grid, lls_ci[1,],lls_ci[2,],from=0,to=delta_grid_size,
-           col.area=rgb(0,0,0,.2))
-delta.hat <- delta_grid[which.max(lls_mean)]
+#color.btwn(delta_grid, llr_ci[1,],llr_ci[2,],from=0,to=delta_grid_size, col.area=rgb(0,0,0,.2))
+delta.hat <- delta_grid[which.max(llr_mean)]
 abline(v=delta.hat,col='grey',lwd=2)
 title(main=bquote(hat(delta) == .(delta.hat)))
 

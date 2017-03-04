@@ -4,36 +4,20 @@ kfilter <- function(y,m0=0,C0=1,n0=1,d0=1,delta=.9) {
   param <- as.list(1:N)
   prior <- list(m=m0, C=C0, n=n0, d=d0)
 
-  update_R <- function(C_prev,W_curr) C_prev + W_curr
-  update_Q <- function(R_curr) R_curr + 1
-  update_W <- function(C_prev) C_prev * (1-delta)/delta
-
-  update_m <- function(m_prev, R_curr, Q_curr, y_curr) {
-    m_prev + (R_curr/Q_curr) * (y_curr-m_prev)
-  }
-  update_C <- function(R_curr,Q_curr) {
-    R_curr - R_curr^2 / Q_curr
-  }
-  update_n <- function(n_prev) {
-    n_prev + 1
-  }
-  update_d <- function(d_prev,y_curr,f,Q_curr) {
-    d_prev + (y_curr-f)^2 / Q_curr
-  }
-
   for (i in 1:N) {
     prev <- if(i>1) param[[i-1]] else prior
 
-    W <- update_W(prev$C)
-    R <- update_R(prev$C,W)
-    Q <- update_Q(R)
+    W <- prev$C * (1-delta) / delta
+    R <- prev$C + W
+    Q <- R + 1
 
-    m <- update_m(prev$m, R, Q, y[i])
-    C <- update_C(R,Q)
-    n <- update_n(prev$n)
-    d <- update_d(prev$d, y[i], prev$m, Q)
+    f <- prev$m
+    m <- prev$m + (R/Q) * (y[i]-f)
+    C <- R - R^2 / Q
+    n <- prev$n + 1
+    d <- prev$d + (y[i]-f)^2 / Q
 
-    param[[i]] <- list(m=m,C=C,n=n,d=d,Q=Q,R=R,f=prev$m)
+    param[[i]] <- list(m=m,C=C,n=n,d=d,Q=Q,R=R,f=f)
   }
 
   list(y=y, delta=delta, param=param, prior=prior)
