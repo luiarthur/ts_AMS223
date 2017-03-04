@@ -5,9 +5,11 @@ library(rcommon)
 
 usuk <- ts(read.csv("../dat/usuk.dat")[,1]) / 100
 
-plot(usuk,type='l')
-
-filt <- kfilter_t(usuk,m0=0,C0=1,n0=1,d0=.01)
+plot(usuk,type='o',pch=20)
+filt <- kfilter_t(usuk,m0=0,C0=1,n0=1,d0=.01,delta=.8)
+lines(sapply(filt$param, function(p) p$f), lty=2)
+filt <- kfilter_t(usuk,m0=0,C0=1,n0=1,d0=.01,delta=1)
+lines(sapply(filt$param, function(p) p$f), lty=1)
 
 delta_grid_size <- 5
 delta_grid <- seq(.6,1,len=delta_grid_size)
@@ -15,7 +17,6 @@ lls <- sapply(delta_grid, function(d) {
   filt <- kfilter_t(usuk,delta=d,m0=0,C0=1,n0=1,d0=.01)
   ll_pred_density_t(filt)
 })
-
 
 
 llr <- lls - tail(lls,1)
@@ -34,11 +35,3 @@ print(llr)
 cat(paste("\ndelta.hat: ", delta.hat),"\n")
 
 
-#filt <- kfilter(usuk,delta=1,m0=0,C0=1,n0=1,d0=.01)
-#theta <- kfilter.theta(filt)
-#plot(usuk); lines(apply(theta,2,mean))
-
-source("kfilter_t.R")
-lls <- sapply(delta_grid, function(d) ll_pred_den(usuk,delta=d,m0=0,C0=1,n0=1,d0=.01))
-(llr <- lls - tail(lls,1))
-plot(delta_grid,llr,type='b')
