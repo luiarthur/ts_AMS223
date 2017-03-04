@@ -12,7 +12,7 @@ ind <- c(0,seq(12,N,by=12))
 label <- c('2004', sapply(t_axis[ind],function(x)substr(x,1,4)))
 
 # OBSERVED PREDICTIVE LOG DENSITY
-delta_grid_size <- 50
+delta_grid_size <- 1000
 delta_grid <- seq(.6,1,len=delta_grid_size)
 lls <- sapply(delta_grid, function(d) {
   filt <- kfilter_t(ucsc,delta=d,m0=50,C0=10,n0=4,d0=20)
@@ -23,7 +23,7 @@ llr <- lls - last(lls)
 
 pdf("../tex/img/delta.pdf")
 plot(delta_grid,llr,type='b',col='steelblue',
-     lwd=3,bty='n',fg='grey',ylab='density',xlab=expression(delta),
+     lwd=3,bty='n',fg='grey',ylab='log-density',xlab=expression(delta),
      main='Observed Predicted log Density\n\n',col.main='grey30')
 delta.hat <- delta_grid[which.max(llr)]
 abline(v=delta.hat,col='grey',lwd=2)

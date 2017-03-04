@@ -84,7 +84,15 @@ for $v$ at time $t=0$ is 1.
 
 ### Optimal Value $\hat\delta$
 
-Figure \ref{fig:delta}
+Using the one-step-ahead forecasting distribution $Y_t | D_{t-1}$, which follows a
+$T$ distribution (the specific form will be provided below), the observed 
+predictive log-density can be computed as 
+
+$$\suml \log p(Y_t|D_{t-1}).$$
+
+Figure \ref{fig:delta} shows the observed predictive log-density for a range
+of values for $\delta$. The $\delta$ which maximizes the log-density is 
+approximately $\hat\delta = 0.867$.
 
 \beginmyfig
 \includegraphics[height=0.5\textwidth]{img/delta.pdf}
@@ -92,6 +100,36 @@ Figure \ref{fig:delta}
 \label{fig:delta}
 \endmyfig
 
+### Recurrence Relationships
+
+The filtering distribution and one-step ahead forecast distribution are
+as follows:
+
+$$
+\begin{aligned}
+\theta_{t-1} \mid D_{t-1} &\sim T_{n_{t-1}}(m_{t-1}, C_{t-1}) \\
+\theta_{t} \mid D_{t-1} &\sim T_{n_{t-1}}(m_{t-1}, R_t) \\
+y_t \mid D_{t-1} &\sim T_{n_{t-1}}(m_{t-1}, Q_t) \\
+\theta_t \mid D_t &\sim T_{n_t}(m_t, C_t) \\
+\end{aligned}
+$$
+
+where 
+
+- $W_t = C_{t-1} \ds\p{\frac{1-\hat\delta}{\hat\delta}}$
+- $R_t = C_{t-1} + W_t$
+- $Q_t = R_t + S_{t-1}$
+- $e_t = y_t - m_{t-1}$
+- $A_t = R_t / Q_t$
+- $C_t = S_t A_t$
+- $n_t = n_{t-1} + 1$
+- $S_t = \ds S_{t-1} + \frac{S_{t-1}}{n_t}\p{\frac{e_t^2}{Q_t}-1}$
+- $m_t = m_{t-1} + A_te_t$
+
+
+### Smoothing Distribution
+
+The smoothing distribution is 
 
 
 [//]: # ( example image embedding

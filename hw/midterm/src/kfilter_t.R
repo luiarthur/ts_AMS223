@@ -37,3 +37,29 @@ ll_pred_density_t <- function(filt) {
 
   sum(dt(T01, df=n-1, log=TRUE)-log(Q)/2) 
 }
+
+smoothing <- function(filt) {
+  m <- sapply(filt$param, function(p) p$m)
+  S <- sapply(filt$param, function(p) p$S)
+  C <- sapply(filt$param, function(p) p$C)
+  Rvec <- sapply(filt$param, function(p) p$R)
+
+  B <- function(j) ifelse(j>0,C[j],filt$prior$m) / R[j+1]
+
+  a <- function(t,minus_k) {
+    k <- -minus_k
+    if (t-k==0) m[t] else m[t-k] + B(t-k) * (a(t,-k+1) - m[t-k])
+  }
+
+  R <- function(t,minus_k) {
+    k <- -minus_k
+    if (t-k==0) C[t] else C[t-k] - B(t-k)^2 * (Rvec[t-k+1] - R(t,-k+1))
+  }
+
+  N <- length(filt$y)
+  aa <- sapply(1:N, function(i) a(N,-i))
+  VV <- sapply(1:N, function(i) R(N,-i))
+
+
+  list(a=aa, V=VV)
+}
