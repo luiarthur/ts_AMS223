@@ -167,7 +167,7 @@ $$
 $$
 
 where $S_t$ and the functions $a_t(-k)$ and $R_t(-k)$ are defined in Theorem 4.4 in 
-@prado2010time.
+@west1997bayesian.
 
 The forecasting distributions for $y$ and $\theta$ are
 
@@ -179,7 +179,7 @@ y_{t+k} | D_t &\sim T_{n_t}\p{f_t(k), Q_t(k)}, \\
 $$
 
 where the functions $a_t(k), R_t(k), f_t(k), Q_t(k)$ are defined in 
-Summary 4.6 in @prado2010time.
+Summary 4.6 in @west1997bayesian.
 
 \newpage
 
