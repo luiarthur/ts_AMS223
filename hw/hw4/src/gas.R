@@ -21,3 +21,7 @@ color.btwn(1:N,filt.ci[1,],filt.ci[2,],from=1,to=N,col.area=rgb(0,0,1,.2))
 lines((N+1):(N+nAhead), fc$f,lty=2,lwd=2,col='red')
 color.btwn((N+1):(N+nAhead),fc.ci[1,],fc.ci[2,],from=1,to=N+nAhead,col.area=rgb(1,0,0,.2))
 
+
+filt.theta <- t(sapply(filt$param, function(p) p$m[1:2]))
+# Plot of the filtered trend 1:N
+lines(1:N, sapply(1:N, function(i) filt.theta[i,] %*% c(1,i) ))
