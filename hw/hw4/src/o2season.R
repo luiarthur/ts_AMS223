@@ -6,6 +6,13 @@ gen.default.prior <- function(num.harmonics) {
   # do this sometime?
 }
 
+# get trend block
+tb  <- function(M) M[1:2,1:2]
+
+# get seasonal block
+sb <- function(M) M[-c(1:2),-c(1:2)]
+
+
 # delta = c(delta_trend, delta_season)
 o2season <- function(y,harmonics,period,delta=c(.95,.95),
                      m0=rep(0,length(harmonics)*2+2),
@@ -17,11 +24,6 @@ o2season <- function(y,harmonics,period,delta=c(.95,.95),
 
   prior <- list(m=m0, C=C0, n=n0, S=d0/n0)
 
-  # get trend block
-  tb  <- function(M) M[1:2,1:2]
-
-  # get seasonal block
-  sb <- function(M) M[-c(1:2),-c(1:2)]
 
   FF <- matrix(c(E(2), rep(E(2),num.harmonics)))
   w <- 2*pi / period
@@ -88,37 +90,34 @@ smoothing <- function(filt) {
 
 
 forecast <- function(filt, nAhead=1) {
-  N <- length(filt$y)
-  C <- lapply(filt$param, function(p) p$C)
-  m <- lapply(filt$param, function(p) p$m)
   delta <- filt$delta
+  DF <- (1-delta) / delta
   FF <- filt$F
   G <- filt$G
 
+  N <- length(filt$y)
   plast <- filt$param[[N]]
 
-  #f <- rep(plast$m,nAhead)
+  S <- plast$S
+  a <- plast$m
+  R <- plast$C
 
-  W_star <- rep(NA,nAhead)
-  R <- plast$R
-  Q <- plast$Q
-  DF <- (1-delta) / delta
-  for (i in 1:nAhead) {
-    W_star[i] <- DF * R/Q
-    R <- R/Q + W_star[i]
-    Q <- R + 1
+  W <- function(Rprev) {
+    W1 <- DF[1] * tb(G) %*% tb(Rprev) %*% t(tb(G))
+    W2 <- DF[2] * sb(G) %*% sb(Rprev) %*% t(sb(G))
+    bd( list(W1,W2) )
   }
 
-  W <- plast$S * W_star
+  f <- rep(NA, nAhead)
+  Q <- rep(NA, nAhead)
 
-  Q <- plast$C + cumsum(W) + plast$S # + p.57 W&H # FIXME
+  for(i in 1:nAhead) {
+    a <- G%*%a
+    R <- G %*% R %*% t(G) + W(R)
+    f[i] <- t(FF) %*% a
+    Q[i] <- t(FF) %*% R %*% FF + S
+  }
 
-  aT <- function(k) if (k==0) m[N] else aT(k-1)
-  fT <- function(t,k) if (k==0) t(FF) %*% aT(k)
-  RT <- function(k) if (k==0) C[N] else RT(k-1) + W[k]
 
-  aa <- sapply(1:12, aT)
-  RR <- sapply(1:12, RT)
-
-  list(f=f, Q=Q, n=filt$param[[N]]$n, a=aa, R=RR)
+  list(f=f, Q=Q, n=plast$n)
 }
