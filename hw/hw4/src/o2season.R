@@ -14,6 +14,11 @@ sb <- function(M) M[-c(1:2),-c(1:2)]
 
 
 # delta = c(delta_trend, delta_season)
+# if num.harmonics == p/2 and p is even, 
+# then ignore the Nyquist, that is
+# the state vector has only (p-1)/2 frequencies if p is even
+# with the G matrix being a (p-1)/2 + 1 dimensional, the
+# last diag being -1. Refer to W&H.
 o2season <- function(y,harmonics,period,delta=c(.95,.95),
                      m0=rep(0,length(harmonics)*2+2),
                      C0=diag(length(harmonics)*2+2),n0=1,d0=1) {
