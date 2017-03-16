@@ -44,7 +44,7 @@ smoothing <- function(filt) {
   C <- sapply(filt$param, function(p) p$C)
   Rvec <- sapply(filt$param, function(p) p$R)
 
-  B <- function(j) ifelse(j>0,C[j],filt$prior$m) / Rvec[j+1]
+  B <- function(j) ifelse(j>0,C[j],filt$prior$C) / Rvec[j+1]
 
   a <- function(t,minus_k) {
     k <- -minus_k
