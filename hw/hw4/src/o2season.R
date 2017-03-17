@@ -143,3 +143,15 @@ forecast <- function(filt, nAhead=1) {
 
   list(f=f, Q=Q, n=plast$n)
 }
+
+ll_pred_density <- function(filt) {
+  y <- filt$y
+  N <- length(y)
+  f <- sapply(filt$param, function(x) x$f)
+  Q <- sapply(filt$param, function(x) x$Q)
+  n <- sapply(filt$param, function(x) x$n)
+  T01 <- (y - f) / sqrt(Q)
+
+  sum(dt(T01, df=n-1, log=TRUE)-log(Q)/2) 
+}
+
