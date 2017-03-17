@@ -13,8 +13,8 @@ label <- c('2004', sapply(t_axis[ind],function(x)substr(x,1,4)))
 nAhead <- 12*1
 
 
-m0 <- c(84,-.3,rep(0,12))
-C0 <- diag(250,14)
+m0 <- c(84,-.3,rep(0,2*6))
+C0 <- diag(250,2+2*6)
 filt <- o2season(ucsc,p=12,h=c(1:6),
                  m0=m0,C0=C0,d0=1,n0=1,delta=c(.99,.95))
 fc <- forecast(filt,nAhead)
