@@ -12,6 +12,12 @@ tb  <- function(M) M[1:2,1:2]
 # get seasonal block
 sb <- function(M) M[-c(1:2),-c(1:2)]
 
+# Check if vector is ascending
+ascending <- function(x) {
+  n <- length(x)
+  x0 <- c(-Inf, x[1:n-1])
+  all(x > x0)
+}
 
 # delta = c(delta_trend, delta_season)
 # if num.harmonics == p/2 and p is even, 
@@ -22,35 +28,34 @@ sb <- function(M) M[-c(1:2),-c(1:2)]
 o2season <- function(y,harmonics,period,delta=c(.95,.95),
                      m0=rep(0,length(harmonics)*2+2),
                      C0=diag(length(harmonics)*2+2),n0=1,d0=1) {
+
   num.harmonics <- length(harmonics)
+  nyquist <- floor(period / 2)
+  has.nyquist <- (nyquist %in% harmonics) && (period%%2==0)
 
-  all.harmonics <- num.harmonics==period/2 && period%%2==0
-
-  if (all.harmonics) {
-    num.harmonics <- num.harmonics - 1
-    harmonics <- 1:num.harmonics
-    m0 <- rep(0,num.harmonics*2+2+1)
-    C0 <- diag(num.harmonics*2+2+1)
-  }
+  stopifnot(ascending(harmonics))
+  stopifnot(max(harmonics) <= nyquist)
 
   N <- length(y)
-  param <- as.list(1:N)
-
-  prior <- list(m=m0, C=C0, n=n0, S=d0/n0)
-
-
-  FF <- if (all.harmonics) 
-      matrix(c(E(2), rep(E(2),num.harmonics),1))
-    else
-      matrix(c(E(2), rep(E(2),num.harmonics)))
-
+  FF <- matrix( rep(E(2),num.harmonics+1) )
+  DF <- (1-delta) / delta
   w <- 2*pi / period
-  Js <- lapply(as.list(harmonics), function(h) Jw(h*w))
+  Jws <- lapply(as.list(harmonics), function(h) Jw(h*w))
   G1 <- J(2)
-  G2 <- if (all.harmonics) bd(list(bd(Js),matrix(-1))) else bd(Js)
+  G2 <- bd(Jws)
+
+  if (has.nyquist && period%%2==0) {
+    FF <- as.matrix(FF[-nrow(FF),])
+    G2 <- as.matrix(G2[-nrow(G2), -ncol(G2)])
+
+    m0 <- m0[1:length(FF)]
+    C0 <- as.matrix(C0[1:length(FF), 1:length(FF)])
+  }
+
   G <- bd(list(G1,G2))
 
-  DF <- (1-delta) / delta
+  param <- as.list(1:N)
+  prior <- list(m=m0, C=C0, n=n0, S=d0/n0)
 
   for (i in 1:N) {
     prev <- if (i>1) param[[i-1]] else prior

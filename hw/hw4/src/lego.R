@@ -10,7 +10,7 @@ bd <- function(m) {
   cs <- cumsum(cols)
 
   M[1:cs[1],1:cs[1]] <- m[[1]]
-  for (i in 2:n) {
+  if(n>1) for (i in 2:n) {
     prev <- cs[i-1]
     curr <- cs[i]
     M[(prev+1):curr,(prev+1):curr] <- m[[i]]
