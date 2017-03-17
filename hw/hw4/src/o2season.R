@@ -24,18 +24,30 @@ o2season <- function(y,harmonics,period,delta=c(.95,.95),
                      C0=diag(length(harmonics)*2+2),n0=1,d0=1) {
   num.harmonics <- length(harmonics)
 
+  all.harmonics <- num.harmonics==period/2 && period%%2==0
+
+  if (all.harmonics) {
+    num.harmonics <- num.harmonics - 1
+    harmonics <- 1:num.harmonics
+    m0 <- rep(0,num.harmonics*2+2+1)
+    C0 <- diag(num.harmonics*2+2+1)
+  }
+
   N <- length(y)
   param <- as.list(1:N)
 
   prior <- list(m=m0, C=C0, n=n0, S=d0/n0)
 
 
-  FF <- matrix(c(E(2), rep(E(2),num.harmonics)))
+  FF <- if (all.harmonics) 
+      matrix(c(E(2), rep(E(2),num.harmonics),1))
+    else
+      matrix(c(E(2), rep(E(2),num.harmonics)))
+
   w <- 2*pi / period
   Js <- lapply(as.list(harmonics), function(h) Jw(h*w))
-
   G1 <- J(2)
-  G2 <- bd(Js)
+  G2 <- if (all.harmonics) bd(list(bd(Js),matrix(-1))) else bd(Js)
   G <- bd(list(G1,G2))
 
   DF <- (1-delta) / delta
@@ -60,7 +72,7 @@ o2season <- function(y,harmonics,period,delta=c(.95,.95),
     param[[i]] <- list(m=m,C=C,n=n,Q=Q,R=R,f=f,S=S)
   }
 
-  list(y=y, delta=delta, FF=FF, prior, G=G, param=param)
+  list(y=y,delta=delta,FF=FF,prior,G=G,param=param,prior=prior)
 }
 
 smoothing <- function(filt) {

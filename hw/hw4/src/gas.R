@@ -6,7 +6,8 @@ gas <- read.table("../dat/gas.dat",header=FALSE)[,1]
 N <- length(gas)
 nAhead <- 72
 #filt <- o2season(gas,h=1:6,p=12,d=c(.9,.95),m0=rep(0,12+2),C0=diag(12+2),n0=1,d0=1)
-filt <- o2season(gas,h=c(1:5),p=12)
+#filt <- o2season(gas,h=c(1:5),p=12)
+filt <- o2season(gas,h=c(1:6),p=12)
 fc <- forecast(filt,nAhead)
 filt.ci <- sapply(filt$param, function(p)
                   p$f + sqrt(p$Q) * qt(c(.025,.975),df=p$n-1))
