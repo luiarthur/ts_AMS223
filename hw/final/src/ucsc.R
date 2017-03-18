@@ -29,7 +29,7 @@ filt.ci <- sapply(filt$param, function(p)
                   p$f + sqrt(p$Q) * qt(c(.025,.975),df=p$n-1))
 fc.ci <- sapply(1:nAhead, function(i)
                 fc$f[i] + sqrt(fc$Q[i]) * qt(c(.025,.975),df=fc$n-1))
-
+sm <- smoothing(filt)
 
 ######################3
 
@@ -44,7 +44,7 @@ axis(1,fg='grey',at=c(ind,tail(ind,1)+nAhead),
 abline(v=c(ind,tail(ind,1)+nAhead),col='grey80',lty=2)
 
 # Data
-lines(1:N, ucsc, col='grey30',lwd=1)
+lines(1:N, ucsc, col='grey30',lwd=1,type='b',pch=16)
 # Filtering 
 lines(sapply(filt$param,function(p) t(filt$FF) %*% p$m),type='l',col='blue',lwd=2)
 color.btwn(1:N,filt.ci[1,],filt.ci[2,],from=1,to=N,col.area=rgb(0,0,1,.2))
@@ -54,7 +54,11 @@ color.btwn((N+1):(N+nAhead),fc.ci[1,],fc.ci[2,],from=1,to=N+nAhead,col.area=rgb(
 
 # Plot of the filtered trend 1:N
 lines(1:N,
-      sapply(filt$param, function(p) t(filt$F[1:2])%*%p$m[1:2]))
+      sapply(filt$param, function(p) p$m[1]))
+
+# Smoothing
+lines(sapply(sm$a,function(a) a[1]),type='l',col='orange',lwd=2)
+
 
 
 # Plot of Harmonics
