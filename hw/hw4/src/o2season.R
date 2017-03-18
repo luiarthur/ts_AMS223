@@ -74,13 +74,16 @@ o2season <- function(y,harmonics,period,delta=c(.95,.95),
     S <- prev$S + prev$S/n * (e^2/Q - 1)
     C <- S/prev$S * (R-A%*%t(A) * Q)
 
-    param[[i]] <- list(m=m,C=C,n=n,Q=Q,R=R,f=f,S=S)
+    param[[i]] <- list(m=m,C=C,n=n,Q=Q,R=R,f=f,S=S,a=a)
   }
 
   list(y=y,delta=delta,FF=FF,prior,G=G,param=param,prior=prior)
 }
 
-smoothing <- function(filt) {
+smoothing <- function(filt) { # W&H Theorem 4.4, Collary 4.4
+
+  N <- length(filt$y)
+  a <- lapply(filt$param, function(p) p$a)
   m <- lapply(filt$param, function(p) p$m)
   S <- sapply(filt$param, function(p) p$S)
   C <- lapply(filt$param, function(p) p$C)
@@ -88,11 +91,11 @@ smoothing <- function(filt) {
   G <- filt$G
 
   #B <- function(j) ifelse(j>0, C[[j]], filt$prior$C) %*% t(G) %*% solve(R[[j+1]])
-  B <- function(j) (if(j>0) C[[j]] else filt$prior$C) %*% t(G) %*% solve(R[[j+1]])
+  B <- function(j) (if(j==0) filt$prior$C else C[[j]]) %*% t(G) %*% solve(R[[j+1]])
 
-  a <- function(t,minus_k) {
+  a_fn <- function(t,minus_k) {
     k <- -minus_k
-    if (k==0) m[[t]] else m[[t-k]] + B(t-k) %*% (a(t,-k+1) - m[[t-k]])
+    if (k==0) m[[t]] else m[[t-k]] + B(t-k) %*% (a_fn(t,-k+1) - a[[t-k+1]])
   }
 
   Rt <- function(t,minus_k) {
@@ -104,8 +107,12 @@ smoothing <- function(filt) {
   }
 
   N <- length(filt$y)
-  aa <- lapply((N-1):0, function(i) a(N,-i))
+  aa <- lapply((N-1):0, function(i) a_fn(N,-i))
   VV <- lapply((N-1):0, function(i) (S[N]/S[N-i]) * Rt(N,-i))
+
+  # sm.mean.y <- t(filt$F) %*% aa
+  # sm.ci.y <- rbind(sm.mean.y, sm.mean.y) + 
+  #            sqrt(t(filt$F)%*%VV%*%filt$F)*qt(c(.05,.95), df=N))
 
   list(a=aa, V=VV)
 }
@@ -156,58 +163,42 @@ ll_pred_density <- function(filt) {
 }
 
 
-optim.delta <- function(y,harmonics,period,
+
+optim.delta <- function(y,harmonics,period,grid.res=30,
                         m0=rep(0,length(harmonics)*2+2),
                         C0=diag(length(harmonics)*2+2),
                         n0=1,d0=1,lower=.85,upper=1,N=1,
-                        ncore=4,return_list=FALSE){
+                        ncore=4, gen.plot=FALSE,
+                        col.mark='grey30'){
 
   library(doMC)
   registerDoMC(ncore)
 
-  opt <- function(delta) { # minimize negative loglikelihood
-    if (any(delta <= lower) || any(delta >= upper) ) Inf else {
-      filt <- o2season(ucsc,p=period,h=harmonics,
-                       m0=m0,C0=C0,d0=d0,n0=n0,
-                       delta=delta)
-      -ll_pred_density(filt)
-    }
+  delta.grid <- expand.grid(seq(lower,upper,len=grid.res), 
+                            seq(lower,upper,len=grid.res))
+
+  system.time( # much faster than sequential...
+  ll <- foreach(i=1:grid.res^2, .combine='c') %dopar% { # 
+    d.pair <- as.numeric(delta.grid[i,])
+    filt <- o2season(y,p=12,h=c(1:6),m0=m0,C0=C0,d0=1,n0=1,delta=d.pair)
+    ll_pred_density(filt)
+  })
+
+  delta.hat <- as.numeric(delta.grid[which.max(ll),])
+
+  if (gen.plot) {
+    library(fields)
+    par.mar <- par()$mar
+    par(mar=c(4,4,2,5),las=1)
+    quilt.plot(delta.grid[,1], delta.grid[,2], ll, cex=2, 
+               main='Log-likelihood of Predictive Density',
+               col.main='grey30',
+               fg='grey',
+               xlab=expression(delta~"trend"), 
+               ylab=expression(delta~"seasonal"))
+    points(delta.hat[1], delta.hat[2], pch=4, lwd=4, cex=2, col=col.mark)
+    par(mar=par.mar, las=0)
   }
 
-  #delta.hats <- lapply(1:N, function(dummy) 
-  #                     optim(runif(2,lower,upper), opt))
-
-  delta.hats <- foreach(i=1:N,.errorhandling='remove') %dopar% optim(runif(2,lower,upper), opt)
-
-  mle.idx <- which.min(sapply(delta.hats, function(dh) dh$value))
-  mle <- delta.hats[[mle.idx]]$par
-
-  out <- if (return_list) delta.hats else mle
-
-  out
+  delta.hat 
 }
-
-# Plotting Grid To Find MLE
-#library(fields) # quilt.plot
-#grid.res <- 30
-#delta.grid <- expand.grid(seq(.1,.99,len=grid.res), seq(.1,.99,len=grid.res))
-#
-#system.time( # much faster than sequential...
-#ll <- foreach(i=1:grid.res^2, .combine='c') %dopar% { # 
-#  d.pair <- as.numeric(delta.grid[i,])
-#  filt <- o2season(ucsc,p=12,h=c(1:6),m0=m0,C0=C0,d0=1,n0=1,delta=d.pair)
-#  ll_pred_density(filt)
-#})
-#
-#par.mar <- par()$mar
-#par(mar=c(4,4,2,5),las=1)
-#quilt.plot(delta.grid[,1], delta.grid[,2], ll, cex=2, 
-#           main='Log-likelihood of Predictive Density',
-#           col.main='grey30',
-#           fg='grey',
-#           xlab=expression(delta~"trend"), 
-#           ylab=expression(delta~"seasonal"))
-#par(mar=par.mar, las=0)
-#delta.hat <- as.numeric(delta.grid[which.max(ll),])
-#delta.hat 
-

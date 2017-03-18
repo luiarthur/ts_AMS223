@@ -12,24 +12,46 @@ ind <- c(0,seq(12,N,by=12))
 label <- c('2004', sapply(t_axis[ind],function(x)substr(x,1,4)))
 nAhead <- 12*1
 m0 <- c(84,-.3,rep(0,2*6))
-C0 <- diag(250,2+2*6)
+ci <- .9; ci.level <- 1-ci
+ci.range <- c(ci.level/2, ci+ci.level/2)
 
 # Choose delta
 system.time( # takes about a minute: c(.9, .95)
-  delta.hat <- optim.delta(ucsc,h=1:6,p=12,m0=m0,C0=C0,
-                           lower=.1,upper=1,N=20,ncore=8)
+  delta.hat <- optim.delta(ucsc,h=1:6,p=12,m0=m0,grid.res=30,
+                           lower=.1,upper=1,N=20,ncore=8,gen.plot=TRUE,
+                           col.mark='grey')
 )
 
 
 # Fit Model
-filt <- o2season(ucsc,p=12,h=c(1:6),
-                 m0=m0,C0=C0,d0=1,n0=1,delta=delta.hat)
+filt <- o2season(ucsc,p=12,h=c(1:6),m0=m0,delta=delta.hat)
+
+# Forecast Distribution
 fc <- forecast(filt,nAhead)
-filt.ci <- sapply(filt$param, function(p)
-                  p$f + sqrt(p$Q) * qt(c(.025,.975),df=p$n-1))
 fc.ci <- sapply(1:nAhead, function(i)
-                fc$f[i] + sqrt(fc$Q[i]) * qt(c(.025,.975),df=fc$n-1))
+                fc$f[i] + sqrt(fc$Q[i]) * qt(ci.range,df=fc$n-1))
+
+# One Step Ahead
+one.step.ahead.mean <- sapply(filt$param,function(p) p$f)
+one.step.ahead.ci <- sapply(filt$param,function(p) 
+                           p$f + sqrt(p$Q)*qt(ci.range, df=p$n-1))
+
+# Filtering Trend
+filt.trend.mean <- sapply(filt$param, function(p) p$m[1])
+filt.trend.ci <- sapply(filt$param, function(p) 
+                        p$m[1] + sqrt(p$R[1,1])*qt(ci.range, df=p$n-1))
+
+# Filtering Seasonals
+
+# Smoothing (W&H Corollary 4.4)
 sm <- smoothing(filt)
+sm.trend.mean <- sapply(sm$a, function(a) a[1])
+sm.trend.ci <- rbind(sm.trend.mean,sm.trend.mean) + 
+               sapply(sm$V, function(V) 
+                     sqrt(V[1,1])*qt(ci.range, df=length(sm$a)))
+
+
+# Smoothing Seasonals
 
 ######################3
 
@@ -44,20 +66,23 @@ axis(1,fg='grey',at=c(ind,tail(ind,1)+nAhead),
 abline(v=c(ind,tail(ind,1)+nAhead),col='grey80',lty=2)
 
 # Data
-lines(1:N, ucsc, col='grey30',lwd=1,type='b',pch=16)
-# Filtering 
-lines(sapply(filt$param,function(p) t(filt$FF) %*% p$m),type='l',col='blue',lwd=2)
-color.btwn(1:N,filt.ci[1,],filt.ci[2,],from=1,to=N,col.area=rgb(0,0,1,.2))
+lines(1:N, ucsc, col='grey30',lwd=1,type='p',pch=16)
+
+# One-step Ahead
+lines(one.step.ahead.mean, col='red', lwd=2)
+color.btwn.mat(1:N,t(one.step.ahead.ci),col.area=rgb(1,0,0,.2))
+
 # Forecast
-lines((N+1):(N+nAhead), fc$f,lty=1,lwd=2,col='red')
-color.btwn((N+1):(N+nAhead),fc.ci[1,],fc.ci[2,],from=1,to=N+nAhead,col.area=rgb(1,0,0,.2))
+lines((N+1):(N+nAhead), fc$f,lty=2,lwd=2,col='red')
+color.btwn.mat((N+1):(N+nAhead),t(fc.ci),col.area=rgb(1,0,0,.2))
 
-# Plot of the filtered trend 1:N
-lines(1:N,
-      sapply(filt$param, function(p) p$m[1]))
+# Filtering Trend
+lines(filt.trend.mean, col='blue', lwd=2)
+color.btwn.mat(1:N,t(filt.trend.ci),from=1,to=N,col.area=rgb(0,0,1,.2))
 
-# Smoothing
-lines(sapply(sm$a,function(a) a[1]),type='l',col='orange',lwd=2)
+# Smoothing Trend
+lines(sm.trend.mean,type='l',col='orange',lwd=2)
+color.btwn.mat(1:N,t(sm.trend.ci),col.area=rgb(1,1,0,.3))
 
 
 

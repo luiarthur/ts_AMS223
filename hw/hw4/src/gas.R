@@ -4,16 +4,17 @@ gas <- read.table("../dat/gas.dat",header=FALSE)[,1]
 
 
 N <- length(gas)
-nAhead <- 72
+nAhead <- 12
 #filt <- o2season(gas,h=1:6,p=12,d=c(.9,.95),m0=rep(0,12+2),C0=diag(12+2),n0=1,d0=1)
 #filt <- o2season(gas,h=c(1:5),p=12)
 #filt <- o2season(gas,h=c(1:6),p=12)
-filt <- o2season(gas,h=c(1,4),p=12)
+filt <- o2season(gas,h=c(1:6),p=12,delta=c(1,1),m0=c(5,rep(0,12)))
 fc <- forecast(filt,nAhead)
+# One step ahead forecast
 filt.ci <- sapply(filt$param, function(p)
-                  p$f + sqrt(p$Q) * qt(c(.025,.975),df=p$n-1))
+                  p$f + sqrt(p$Q) * qt(c(.05,.95),df=p$n-1))
 fc.ci <- sapply(1:nAhead, function(i)
-                fc$f[i] + sqrt(fc$Q[i]) * qt(c(.025,.975),df=fc$n-1))
+                fc$f[i] + sqrt(fc$Q[i]) * qt(c(.05,.95),df=fc$n-1))
 
 plot(gas,type='p',xlim=c(1,N+nAhead),ylim=range(c(gas,fc.ci)),pch=20,col='grey30')
 
@@ -32,6 +33,10 @@ lines(1:N, sapply(s$a, function(a) t(filt$F)%*%filt$G%*%a), col='orange',lwd=2)
 plot(gas,type='b',pch=16,col='grey')
 # Mean Filtering
 lines(sapply(filt$param, function(p) t(filt$F)%*%p$m),col='red')
+mfilt.ci <- sapply(filt$param, function(p)
+                   t(filt$F)%*%p$m+ sqrt(p$C) * qt(c(.025,.975),df=p$n-1))
+color.btwn(1:N,mfilt.ci[1,],filt.ci[2,],from=1,to=N,col.area=rgb(0,0,1,.2))
+
 # Polynomial Filtering
 lines(sapply(filt$param, function(p) t(filt$F[1:2])%*%p$m[1:2]),col='blue')
 

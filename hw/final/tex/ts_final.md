@@ -67,10 +67,10 @@ $\hat\delta = (\widehat\dt, \widehat\ds) = (0.9,0.95)$.
 - Marginal Filtering Distributions
     - trend
     - each harmonic
-- one-step ahead $(y_t \mid D_{t-1})$ for $t=1:T$
-- Smoothing Distribution
+- Marginal Smoothing Distribution
     - trend
     - each harmonic
+- one-step ahead $(y_t \mid D_{t-1})$ for $t=1:T$
 - forecast Distribution $(y_{T+k} \mid D_T)$, for $k=1:12$ and $T=156$
 
 
