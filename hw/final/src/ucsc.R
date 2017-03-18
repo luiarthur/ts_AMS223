@@ -36,22 +36,33 @@ one.step.ahead.mean <- sapply(filt$param,function(p) p$f)
 one.step.ahead.ci <- sapply(filt$param,function(p) 
                            p$f + sqrt(p$Q)*qt(ci.range, df=p$n-1))
 
+
 # Filtering Trend
 filt.trend.mean <- sapply(filt$param, function(p) p$m[1])
 filt.trend.ci <- sapply(filt$param, function(p) 
                         p$m[1] + sqrt(p$R[1,1])*qt(ci.range, df=p$n-1))
 
 # Filtering Seasonals
+filt.harm.mean <- sapply(c(3,5,7,9,11,13),function(h) sapply(filt$param, function(p) p$m[h]))
+colnames(filt.harm.mean) <- c(paste("Harmonic", 1:5), "Nyquist")
+filt.harm.ci <- lapply(c(3,5,7,9,11,13), function(h) 
+                       sapply(filt$param, function(p) p$m[h] + sqrt(p$R[h,h])*
+                              qt(ci.range,df=p$n-1)))
 
-# Smoothing (W&H Corollary 4.4)
+# Smoothing Trend (W&H Corollary 4.4)
 sm <- smoothing(filt)
 sm.trend.mean <- sapply(sm$a, function(a) a[1])
 sm.trend.ci <- rbind(sm.trend.mean,sm.trend.mean) + 
                sapply(sm$V, function(V) 
                      sqrt(V[1,1])*qt(ci.range, df=length(sm$a)))
 
-
 # Smoothing Seasonals
+z <- zipped(sm$a, sm$V)
+sm.harm.mean <- sapply(c(3,5,7,9,11,13),function(h) sapply(sm$a, function(a) a[h]))
+colnames(sm.harm.mean) <- colnames(filt.harm.mean)
+sm.harm.ci <- lapply(c(3,5,7,9,11,13), function(h) 
+                     sapply(z, function(p) p$a[[1]][h] + sqrt(p$V[h,h])*
+                            qt(ci.range,df=length(sm$a))))
 
 ######################3
 
@@ -84,10 +95,23 @@ color.btwn.mat(1:N,t(filt.trend.ci),from=1,to=N,col.area=rgb(0,0,1,.2))
 lines(sm.trend.mean,type='l',col='orange',lwd=2)
 color.btwn.mat(1:N,t(sm.trend.ci),col.area=rgb(1,1,0,.3))
 
+# Plot Filtering Harmonics
+par(mfrow=c(3,2),mar=mar.ts,oma=oma.ts)
+for (i in 1:ncol(filt.harm.mean)) {
+  plot(filt.harm.mean[,i],type='l', ylab=colnames(filt.harm.mean)[i],
+       xaxt=ifelse(i>=5,'s','n'))
+  color.btwn.mat(1:N,t(filt.harm.ci[[i]]))
+}
+par(mfrow=c(1,1), mar=mar.default, oma=oma.default)
+title(main='Filtering Distribution for Harmonics (mean and 90% CI)')
 
+# Plot Smoothing Harmonics
+par(mfrow=c(3,2),mar=mar.ts,oma=oma.ts)
+for (i in 1:ncol(filt.harm.mean)) {
+  plot(sm.harm.mean[,i],type='l', ylab=colnames(sm.harm.mean)[i],
+       xaxt=ifelse(i>=5,'s','n'))
+  color.btwn.mat(1:N,t(sm.harm.ci[[i]]))
+}
+par(mfrow=c(1,1), mar=mar.default, oma=oma.default)
+title(main='Smoothing Distribution for Harmonics (mean and 90% CI)')
 
-# Plot of Harmonics
-#plot(0,0,type='n',ylim=c(-20,20),xlim=c(1,N))
-#for (i in c(1,4)) lines(1:N,
-#     sapply(filt$param, function(p) 
-#            t(filt$F[(1:2)+2*i])%*%p$m[(1:2)+2*i]), type='l')

@@ -64,14 +64,14 @@ $\hat\delta = (\widehat\dt, \widehat\ds) = (0.9,0.95)$.
 
 ## Summary of Distributions
 
-- Marginal Filtering Distributions
+- Marginal Filtering Distributions $(\theta_t | D_t)$
     - trend
     - each harmonic
-- Marginal Smoothing Distribution
+- Marginal Smoothing Distribution $(\theta_t | D_T)$
     - trend
     - each harmonic
 - one-step ahead $(y_t \mid D_{t-1})$ for $t=1:T$
-- forecast Distribution $(y_{T+k} \mid D_T)$, for $k=1:12$ and $T=156$
+- forecast Distribution $(y_{T+k} \mid D_T)$, for $k=1:12$
 
 
 [//]: # ( example image embedding

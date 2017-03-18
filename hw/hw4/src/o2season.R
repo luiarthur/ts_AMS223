@@ -202,3 +202,15 @@ optim.delta <- function(y,harmonics,period,grid.res=30,
 
   delta.hat 
 }
+
+mar.ts <- c(0, 5.1, 0, 2.1)
+oma.ts <- c(6, 0, 5, 0)
+mar.default <- c(5.1, 4.1, 4.1, 2.1)
+oma.default <- rep(0,4)
+
+zipped <- function(a_vec,b_ls) {
+  stopifnot(length(a_vec) == length(b_ls))
+  N <- length(a_vec)
+
+  lapply(as.list(1:N), function(i) list(a=a_vec[i],V=b_ls[[i]]) )
+}
