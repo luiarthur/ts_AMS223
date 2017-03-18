@@ -155,3 +155,59 @@ ll_pred_density <- function(filt) {
   sum(dt(T01, df=n-1, log=TRUE)-log(Q)/2) 
 }
 
+
+optim.delta <- function(y,harmonics,period,
+                        m0=rep(0,length(harmonics)*2+2),
+                        C0=diag(length(harmonics)*2+2),
+                        n0=1,d0=1,lower=.85,upper=1,N=1,
+                        ncore=4,return_list=FALSE){
+
+  library(doMC)
+  registerDoMC(ncore)
+
+  opt <- function(delta) { # minimize negative loglikelihood
+    if (any(delta <= lower) || any(delta >= upper) ) Inf else {
+      filt <- o2season(ucsc,p=period,h=harmonics,
+                       m0=m0,C0=C0,d0=d0,n0=n0,
+                       delta=delta)
+      -ll_pred_density(filt)
+    }
+  }
+
+  #delta.hats <- lapply(1:N, function(dummy) 
+  #                     optim(runif(2,lower,upper), opt))
+
+  delta.hats <- foreach(i=1:N,.errorhandling='remove') %dopar% optim(runif(2,lower,upper), opt)
+
+  mle.idx <- which.min(sapply(delta.hats, function(dh) dh$value))
+  mle <- delta.hats[[mle.idx]]$par
+
+  out <- if (return_list) delta.hats else mle
+
+  out
+}
+
+# Plotting Grid To Find MLE
+#library(fields) # quilt.plot
+#grid.res <- 30
+#delta.grid <- expand.grid(seq(.1,.99,len=grid.res), seq(.1,.99,len=grid.res))
+#
+#system.time( # much faster than sequential...
+#ll <- foreach(i=1:grid.res^2, .combine='c') %dopar% { # 
+#  d.pair <- as.numeric(delta.grid[i,])
+#  filt <- o2season(ucsc,p=12,h=c(1:6),m0=m0,C0=C0,d0=1,n0=1,delta=d.pair)
+#  ll_pred_density(filt)
+#})
+#
+#par.mar <- par()$mar
+#par(mar=c(4,4,2,5),las=1)
+#quilt.plot(delta.grid[,1], delta.grid[,2], ll, cex=2, 
+#           main='Log-likelihood of Predictive Density',
+#           col.main='grey30',
+#           fg='grey',
+#           xlab=expression(delta~"trend"), 
+#           ylab=expression(delta~"seasonal"))
+#par(mar=par.mar, las=0)
+#delta.hat <- as.numeric(delta.grid[which.max(ll),])
+#delta.hat 
+
