@@ -23,13 +23,21 @@ color.btwn(1:N,filt.ci[1,],filt.ci[2,],from=1,to=N,col.area=rgb(0,0,1,.2))
 lines((N+1):(N+nAhead), fc$f,lty=2,lwd=2,col='red')
 color.btwn((N+1):(N+nAhead),fc.ci[1,],fc.ci[2,],from=1,to=N+nAhead,col.area=rgb(1,0,0,.2))
 
+# Smoothing
+s <- smoothing(filt)
+lines(1:N, sapply(s$a, function(a) t(filt$F)%*%filt$G%*%a), col='orange',lwd=2)
+
 
 # Plot of the filtered trend 1:N
-lines(1:N,
-      sapply(filt$param, function(p) t(filt$F[1:2])%*%p$m[1:2]))
+plot(gas,type='b',pch=16,col='grey')
+# Mean Filtering
+lines(sapply(filt$param, function(p) t(filt$F)%*%p$m),col='red')
+# Polynomial Filtering
+lines(sapply(filt$param, function(p) t(filt$F[1:2])%*%p$m[1:2]),col='blue')
+
 
 # Plot of Harmonics
-plot(0,0,type='n',ylim=c(-3,3),xlim=c(1,N))
-for (i in c(4,1)) lines(1:N,
-     sapply(filt$param, function(p) 
-            t(filt$F[(1:2)+2*i])%*%p$m[(1:2)+2*i]), type='l')
+#plot(0,0,type='n',ylim=c(-3,3),xlim=c(1,N))
+#for (i in c(4,1)) lines(1:N,
+#     sapply(filt$param, function(p) 
+#            t(filt$F[(1:2)+2*i])%*%p$m[(1:2)+2*i]), type='l')
