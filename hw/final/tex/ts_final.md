@@ -141,6 +141,28 @@ Consequently, harmonics 1,2,5, and 6 (the Nyquist frequency) are kept in the
 reduced model $(\mathcal{M}_2)$.
 
 
+## Reduced Model ($\mathcal{M}_2$)
+
+\beginmyfig
+\includegraphics[height=0.6\textwidth]{img/dist2.pdf}
+\caption{One-step ahead $(y_t|D_{t-1})$ mean (red solid line). 12-step forecast mean (red dotted line). Filtering $(\theta_t|D_t)$ trend component mean (blue). Smoothing $(\theta_t|D_T)$ trend component mean (orange). All estimates are accompanied by 90\% credible intervals.}
+\label{fig:dist2}
+\endmyfig
+
+\beginmyfig
+\includegraphics[height=0.6\textwidth]{img/filtHarm2.pdf}
+\caption{Harmonic Components of Filtering Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
+\label{fig:filtHarm2}
+\endmyfig
+
+\beginmyfig
+\includegraphics[height=0.6\textwidth]{img/smHarm2.pdf}
+\caption{Harmonic Components of Smoothing Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
+\label{fig:smHarm2}
+\endmyfig
+
+
+
 [//]: # ( example image embedding
 \beginmyfig
 \includegraphics[height=0.5\textwidth]{path/to/img/img.pdf}
