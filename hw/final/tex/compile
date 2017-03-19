@@ -5,7 +5,7 @@
 # --natbib  =>  use the natbib package in latex
 # -o        =>  output file name
 
-pandoc ts_final.md -s -o ts_final.tex
+pandoc ts_final.md -s --natbib -o ts_final.tex
 
 pdflatex ts_final.tex
 bibtex ts_final.aux

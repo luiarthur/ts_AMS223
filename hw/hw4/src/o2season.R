@@ -77,7 +77,8 @@ o2season <- function(y,harmonics,period,delta=c(.95,.95),
     param[[i]] <- list(m=m,C=C,n=n,Q=Q,R=R,f=f,S=S,a=a)
   }
 
-  list(y=y,delta=delta,FF=FF,prior,G=G,param=param,prior=prior)
+  list(y=y,delta=delta,FF=FF,prior,G=G,param=param,prior=prior,
+       period=period, harmonics=harmonics)
 }
 
 smoothing <- function(filt) { # W&H Theorem 4.4, Collary 4.4
@@ -180,7 +181,7 @@ optim.delta <- function(y,harmonics,period,grid.res=30,
   system.time( # much faster than sequential...
   ll <- foreach(i=1:grid.res^2, .combine='c') %dopar% { # 
     d.pair <- as.numeric(delta.grid[i,])
-    filt <- o2season(y,p=12,h=c(1:6),m0=m0,C0=C0,d0=1,n0=1,delta=d.pair)
+    filt <- o2season(y,p=period,h=harmonics,m0=m0,C0=C0,d0=d0,n0=n0,delta=d.pair)
     ll_pred_density(filt)
   })
 
@@ -213,4 +214,29 @@ zipped <- function(a_vec,b_ls) {
   N <- length(a_vec)
 
   lapply(as.list(1:N), function(i) list(a=a_vec[i],V=b_ls[[i]]) )
+}
+
+# Returns Probability of Retention. Keep the harmonics
+# with large probabilities.
+test.harmonics <- function(filt) { # W&H Section 8.6.7 (p.257)
+
+  N <- length(filt$y)
+
+  mN <- filt$param[[N]]$m
+  aN <- filt$param[[N]]$a
+  CN <- filt$param[[N]]$C
+  nN <- filt$param[[N]]$n
+
+  harmonics <- filt$harmonics
+  period <- filt$period
+
+  stopifnot(length(harmonics) == floor(period/2))
+
+  sapply(harmonics, function(h) {
+    idx <- if (h == floor(period/2) && period%%2 == 0) length(mN) else 2*h+c(1:2)
+    df1 <- if (h == period/2) 1 else 2
+    mNh <- if (h == period/2) aN[idx] else mN[idx]
+    CNh <- CN[idx,idx]
+    pf(t(mNh) %*% solve(CNh) %*% mNh/df1, df1=df1,df2=nN,lower.tail=TRUE)
+  })
 }
