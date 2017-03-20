@@ -4,14 +4,16 @@ source('Gibbs.R')
 
 ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100, 
                  # prior for static parameters
-                 aw=2,bw=10,av=2,bv=10,
+                 aw=2,bw=1,
+                 av=1/2,bv=1/2, # same as n0/2, d0/2
                  # prior for state parameters
-                 m0=rep(0,q),C0=diag(1,q),n0=1,d0=1,tau=30,
+                 m0=rep(0,q),C0=diag(1,q),tau=30,
                  phi.lower=-1,phi.upper=1) {
 
   N <- length(y)
   x <- 1:N
   FF <- matrix(c(1, rep(0,q-1)))
+  G <- function(phi,q=length(phi)) if (q>1) rbind(phi, cbind(diag(q-1),0)) else phi
   Iq <- diag(q)
   W <- tau*Iq 
 
@@ -19,10 +21,7 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
   # Update DLM state params
   update.state <- function(param) {
     ### Forward Filtering
-    #F.mat <- matrix(c(FF), nrow=N, ncol=q, byrow=TRUE)
-    #mod <- dlmModReg(F.mat,addInt=FALSE, dV=param$v, dW=diag(W), m0=m0, C0=C0)
-    mod <- dlmModPoly(q, dV=param$v, dW=diag(W), m0=m0, C0=C0)
-    GG(mod) <-  rbind(param$phi, cbind(diag(q-1),0))
+    mod <- dlm(m0=m0, C0=C0, FF=t(FF), V=param$v, GG=G(param$phi), W=W)
     level <- param$alpha + x*param$beta
     filt <- dlmFilter(y-level, mod=mod)
     ### Backward Sampling
@@ -34,6 +33,8 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
   # Update static params (alpha, beta, w, phi, v)
   update.static <- function(param){
     theta <- param$theta[-1,]
+    theta.prev <- param$theta[-(N+1),]
+    theta1 <- if (NCOL(theta)>1) theta[,1] else theta
     Ftheta <- theta %*% FF # theta is (N x q)
 
     ### alpha
@@ -51,18 +52,9 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
     param$w <- rig(aw + 1, bw + (param$alpha^2+param$beta^2)/(2*param$v))
 
     ### phi
-    theta.prev <- theta[-(N+1),]
-    phi <- param$phi
-    for (j in 1:q) {
-      #phi[j] <- rtnorm(1, 
-      #                 sum(phi[-j])*sum(theta.prev[,j])/(tau*sum(theta.prev[,j]^2)),
-      #                 sqrt(1/(tau*sum(theta.prev[,j]^2))), phi.lower, phi.upper)
-      phi[j] <- rnorm(1, 
-                       sum(phi[-j])*sum(theta.prev[,j])/(tau*sum(theta.prev[,j]^2)),
-                       sqrt(1/(tau*sum(theta.prev[,j]^2))))
-
-    }
-    param$phi <- phi
+    phi.XXi <- solve( t(theta.prev) %*% theta.prev )
+    phi.mu <- phi.XXi %*% t(theta.prev)%*% theta1
+    param$phi <- c(mvrnorm(phi.mu, tau*phi.XXi))
 
     ### v
     param$v <- rig(av+N/2, bv+sum((y-param$alpha-x*param$beta-Ftheta)^2)/2)
@@ -88,4 +80,12 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
   samps <- gibbs(init, update.all, B, burn, printFreq)
 
   list(samps=samps, dat=y)
+}
+
+to.arr <- function(ls_mat) {
+  N <- length(ls_mat)
+  mat.dim <- dim(ls_mat[[1]])
+  out <- array(NA, dim=c(mat.dim[1],mat.dim[2],N))
+  for (i in 1:N) out[,,i] <- ls_mat[[i]]
+  return(out)
 }

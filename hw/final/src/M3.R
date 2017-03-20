@@ -18,7 +18,10 @@ ci.range <- c(ci.level/2, ci+ci.level/2)
 
 
 source('ffbs/ffbs.R',chdir=TRUE)
+system.time(
 out <- ffbs(ucsc,q=2,B=1000,burn=500,printFreq=100)
+)
+mod <- dlm(m0=c(1,0),C0=diag(2),FF=matrix(1:0,nrow=1),V=1,GG=diag(2),W=diag(2)) 
 
 alpha <- sapply(out$samps, function(s) s$alpha)
 beta <- sapply(out$samps, function(s) s$beta)
@@ -31,9 +34,10 @@ w <- sapply(out$samps, function(s) s$w)
 plotPosts(cbind(v,w))
 
 # Plot Theta
-theta1 <- sapply(out$samps, function(s) s$theta[,1])
-theta2 <- sapply(out$samps, function(s) s$theta[,2])
-theta.mean <- cbind(apply(theta1,1,mean), apply(theta2,1,mean))
+theta <- to.arr(lapply(out$samps, function(s) s$theta))
+theta.mean <- apply(theta, 1:2, mean)
+theta.ci <- apply(theta, 1:2, quantile, c(.05,.95))
+
 colnames(theta.mean) <- paste0('theta', 1:2)
 plot.ts(theta.mean,type='l')
 
