@@ -22,7 +22,7 @@ pacf(ucsc)
 dev.off()
 
 system.time( # 2000 iterations: quick for q=2,  11 minus (q=15)
-out <- ffbs(ucsc,q=15,B=2000,burn=10000,printFreq=100)
+out <- ffbs(ucsc,q=15,B=2000,burn=20000,printFreq=100)
 )
 
 alpha <- sapply(out$samps, function(s) s$alpha)
@@ -52,9 +52,9 @@ theta.ci <- apply(theta, 1:2, quantile, c(.05,.95))
 #dev.off()
 
 x.mean <- theta.mean[-1,1]
-x.ci <- theta.ci[,-1,2]
+x.ci <- theta.ci[,-1,1]
 pdf('../tex/img/x.pdf',w=13,h=7)
-plot(x.mean,type='l',col='grey30',lwd=2,bty='n',fg='grey',ylab='x')
+plot(1:N,x.mean,type='l',col='grey30',lwd=2,bty='n',fg='grey',ylab='x')
 color.btwn.mat(1:N,t(x.ci))
 dev.off()
 

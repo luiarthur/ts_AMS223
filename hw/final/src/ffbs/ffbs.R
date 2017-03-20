@@ -17,6 +17,14 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
   Iq <- diag(q)
   W <- tau*Iq 
 
+  # TEST
+  H <- cbind(1, c(x, rep(0,q)))
+  Sig <- function(v,w) {
+    I <- diag(N+q)
+    diag(I)[1:N] <- v
+    diag(I)[-c(1:N)] <- v*w
+    I
+  }
 
   # Update DLM state params
   update.state <- function(param) {
@@ -38,15 +46,24 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
     Ftheta <- theta %*% FF # theta is (N x q)
 
     ### alpha
-    z1 <- sum(y - x*param$beta - Ftheta)
-    param$alpha <- rnorm(1, (param$w*z1)/(1+param$w*N), 
-                         sqrt(param$w*param$v/(1+param$w*N)))
+    #z1 <- sum(y - x*param$beta - Ftheta)
+    #param$alpha <- rnorm(1, (param$w*z1)/(1+param$w*N), 
+    #                     sqrt(param$w*param$v/(1+param$w*N)))
 
-    ### beta
-    z2 <- t(y - param$alpha - Ftheta) %*% x
-    xx <- sum(x^2)
-    param$beta <- rnorm(1, param$w*z2/(param$w*xx+1), 
-                        sqrt(param$v*param$w/(param$w*xx+1)))
+    #### beta
+    #z2 <- t(y - param$alpha - Ftheta) %*% x
+    #xx <- sum(x^2)
+    #param$beta <- rnorm(1, param$w*z2/(param$w*xx+1), 
+    #                    sqrt(param$v*param$w/(param$w*xx+1)))
+
+    # alph & beta
+    y_star <- c(y-Ftheta, rep(0,q)) 
+    Si <- solve(Sig(param$v,param$w))
+    V_star <- solve(t(H) %*%  Si %*% H)
+    mu_star <- V_star %*% t(H) %*% Si %*% y_star
+    ab <- mvrnorm(mu_star,V_star)
+    param$alpha <- ab[1]
+    param$beta <- ab[2]
 
     ### w
     param$w <- rig(aw + 1, bw + (param$alpha^2+param$beta^2)/(2*param$v))
