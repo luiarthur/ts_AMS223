@@ -252,8 +252,60 @@ $$
 
 ### Distributional Summary for $\M_3$
 
+Figure \ref{fig:x} provides the posterior mean (solid line) and 90\% credible
+interval (grey region) for $x_t$ for $t=1:T$.
 
+\beginmyfig
+\includegraphics[height=0.5\textwidth]{img/x.pdf}
+\caption{Posterior mean and 90\% CI for $x_t$}
+\label{fig:x}
+\endmyfig
 
+Figure \ref{fig:ab} provides the posterior distribution for $(\alpha,\beta)$.
+The equal-tailed 95\% credible intervals for $\alpha$ and $\beta$ are 
+(81, 87) and (-0.31,-0.24) respectively. Neither intervals contain 0.
+
+\beginmyfig
+\includegraphics[height=0.5\textwidth]{img/ab.pdf}
+\caption{Posterior mean and 95\% CI for $\alpha$ and $\beta$.}
+\label{fig:ab}
+\endmyfig
+
+Figure \ref{fig:vw} provides the posterior distribution for $(v,w)$.  The
+equal-tailed 95\% credible intervals for $v$ and $w$ are (20,45) and
+(15,221) respectively. The prior variance $w$ (for $\alpha,\beta$) being
+large is reasonably as the prior mean for $(\alpha,\beta)$ was 0, but their
+posterior means were very far from 0.
+
+\beginmyfig
+\includegraphics[height=0.5\textwidth]{img/vw.pdf}
+\caption{Posterior mean and 95\% CI for $v$ and $w$. }
+\label{fig:vw}
+\endmyfig
+
+Figure \ref{fig:root} summarizes the distribution for the moduli and periods
+of the quasi-periodic roots of the characteristic polynomial ordered by period.
+The plots show the posterior means with accompanying 95\% credible intervals.
+
+\beginmyfig
+\includegraphics[height=0.5\textwidth]{img/root.pdf}
+\caption{Posterior mean and 95\% CI for the moduli and periods.}
+\label{fig:root}
+\endmyfig
+
+Figure \ref{fig:M3} summarizes the forecast distribution $(y_{T+12}|D_T)$.
+The dotted line represents the posterior mean and the red region is
+the accompanying 90\% credible interval. For comparison, the distribution
+$(y_t | D_T)$ is also included.
+
+\beginmyfig
+\includegraphics[height=0.5\textwidth]{img/M3.pdf}
+\caption{Distribution of $(y_{T+12}|D_T)$ with posterior mean (dotted line) and
+90\% credible interval (red shaded region).}
+\label{fig:M3}
+\endmyfig
+
+## Discussion of $\M_1$, $\M_2$, and $\M_3$
 
 
 [//]: # ( example image embedding

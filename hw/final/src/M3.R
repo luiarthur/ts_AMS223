@@ -17,10 +17,13 @@ ci <- .9; ci.level <- 1-ci
 ci.range <- c(ci.level/2, ci+ci.level/2)
 
 
-system.time(
-out <- ffbs(ucsc,q=2,B=1000,burn=500,printFreq=100)
+pdf('../tex/img/pacf.pdf')
+pacf(ucsc)
+dev.off()
+
+system.time( # 2000 iterations: quick for q=2,  11 minus (q=15)
+out <- ffbs(ucsc,q=2,B=2000,burn=5000,printFreq=100)
 )
-mod <- dlm(m0=c(1,0),C0=diag(2),FF=matrix(1:0,nrow=1),V=1,GG=diag(2),W=diag(2)) 
 
 alpha <- sapply(out$samps, function(s) s$alpha)
 beta <- sapply(out$samps, function(s) s$beta)
@@ -41,16 +44,16 @@ dev.off()
 # Plot Theta
 theta <- to.arr(lapply(out$samps, function(s) s$theta))
 theta.mean <- apply(theta, 1:2, mean)
+colnames(theta.mean) <- paste0('theta', 1:out$q)
 theta.ci <- apply(theta, 1:2, quantile, c(.05,.95))
 
-colnames(theta.mean) <- paste0('theta', 1:2)
-pdf('../tex/img/theta.pdf')
-plot.ts(theta.mean,type='l', main=expression("Mean"~theta))
-dev.off()
+#pdf('../tex/img/theta.pdf')
+#plot.ts(theta.mean,type='l', main=expression("Mean"~theta))
+#dev.off()
 
 x.mean <- theta.mean[-1,1]
 x.ci <- theta.ci[,-1,2]
-pdf('../tex/img/x.pdf')
+pdf('../tex/img/x.pdf',w=13,h=7)
 plot(x.mean,type='l',col='grey30',lwd=2,bty='n',fg='grey',ylab='x')
 color.btwn.mat(1:N,t(x.ci))
 dev.off()
@@ -60,7 +63,7 @@ trend <- sapply(out$samps, function(s) s$a + s$b*1:N)
 pred.mean <- apply(trend,1,mean)+theta.mean[-1,1]
 pred.ci <- apply(trend,1,quantile,c(.05,.95)) + theta.ci[,-1,2]
 
-pdf('../tex/img/M3.pdf')
+pdf('../tex/img/M3.pdf',w=13,h=7)
 plot(0,0, xlim=c(0,N+nAhead), ylim=c(0,100), type='n',bty='n',
      fg='grey',xaxt='n',
      xlab='Year',ylab='Google Volume Index',las=2,
@@ -77,7 +80,24 @@ color.btwn.mat(1:N,t(pred.ci),col=rgb(1,0,0,.2))
 fc <- forecast(out,nAhead=nAhead)
 fc.mean <- apply(fc,1,mean)
 fc.ci <- apply(fc,1,quantile,c(.05,.95))
-lines( (N+1):(N+nAhead), fc.mean, col='red', lwd=2)
+lines( (N+1):(N+nAhead), fc.mean, col='red', lwd=2, lty=2)
 color.btwn.mat((N+1):(N+nAhead),t(fc.ci),col=rgb(1,0,0,.2))
 dev.off()
 
+### Eigen
+Groot <- G.roots(out)
+Groot.mod.mean <- apply(Groot$mod,1,mean)
+Groot.arg.mean <- apply(Groot$arg,1,mean)
+Groot.mod.ci <- apply(Groot$mod,1,quantile,c(.05,.95))
+Groot.arg.ci <- apply(2*pi/Groot$arg,1,quantile,c(.05,.95))
+ord <- order(Groot.arg.mean)
+
+pdf('../tex/img/root.pdf',w=13,h=7)
+par(mfrow=c(2,1),mar=mar.ts,oma=oma.ts)
+plot(Groot.arg.mean[ord],ylim=range(Groot.arg.ci),xaxt='n',ylab='Frequency')
+add.errbar(t(Groot.arg.ci)[ord,])
+
+plot(Groot.mod.mean[ord],ylim=range(Groot.mod.ci),ylab='modulus')
+add.errbar(t(Groot.mod.ci)[ord,])
+par(mfrow=c(1,1),mar=mar.default,oma=oma.default)
+dev.off()

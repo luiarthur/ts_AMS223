@@ -79,7 +79,7 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
 
   samps <- gibbs(init, update.all, B, burn, printFreq)
 
-  list(samps=samps, dat=y, tau=tau)
+  list(samps=samps, dat=y, tau=tau, q=q, FF=FF)
 }
 
 to.arr <- function(ls_mat) {
@@ -101,14 +101,14 @@ forecast <- function(ffbs.out, nAhead=1, ci.level=.9) {
   G <- function(phi,q=length(phi)) if (q>1) rbind(phi, cbind(diag(q-1),0)) else phi
 
   theta <- to.arr(lapply(ffbs.out$samps, function(s) s$theta))
-  phi <- t(sapply(out$samps, function(s) s$phi)) #(Bxq)
+  phi <- t(sapply(ffbs.out$samps, function(s) s$phi)) #(Bxq)
 
   theta <- to.arr(lapply(ffbs.out$samps, function(s) s$theta))
   theta.last <- theta[N+1,,] # (qxB)
 
-  alpha <- sapply(out$samps, function(s) s$alpha)
-  beta <- sapply(out$samps, function(s) s$beta)
-  v <- sapply(out$samps, function(s) s$v)
+  alpha <- sapply(ffbs.out$samps, function(s) s$alpha)
+  beta <- sapply(ffbs.out$samps, function(s) s$beta)
+  v <- sapply(ffbs.out$samps, function(s) s$v)
 
   f <- matrix(NA,nAhead,B)
   for(i in 1:nAhead) {
@@ -120,4 +120,21 @@ forecast <- function(ffbs.out, nAhead=1, ci.level=.9) {
   }
 
   return(f)
+}
+
+G.roots <- function(ffbs.out) { # if all roots are complex
+  N <- length(ffbs.out$dat)
+  q <- ncol(ffbs.out$samp[[1]]$theta)
+  B <- length(ffbs.out$samps)
+
+  G <- function(phi,q=length(phi)) if (q>1) rbind(phi, cbind(diag(q-1),0)) else phi
+  phi <- lapply(ffbs.out$samps, function(s) s$phi)
+
+  # eigen values are reciprocal roots of characteristic polynomial when the
+  # eigen values are distinct
+  Groot <- lapply(phi, function(p) 1/eigen(G(p))$values + 1E-10i)
+  mod <- sapply(Groot, function(r) Mod(r)) # REQUIRES pairs of complex roots!
+  arg <- sapply(Groot, function(r) Arg(r)) # REQUIRES pairs of complex roots!
+
+  list(mod=mod, arg=arg)
 }
