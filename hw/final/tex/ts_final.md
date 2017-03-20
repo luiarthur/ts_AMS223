@@ -50,53 +50,70 @@ header-includes:
     - \def\ds{\delta_{\text{season}}}
 ---
 
-## Previous Model
+## Previous Model ($\M_0$)
+
+Previously, the model $\M_0$ (as follows) was fit to the UCSC web-search dataset:
+
+$$
+\begin{array}{rcll}
+y_t &=& \theta_t + \nu_t, &\nu_t\sim \N(0,v) \\
+\theta_t &=& \theta_{t-1} + w_t, &w_t\sim \N(0,vW_t) \\
+\end{array}
+$$
+
+with $W_t$ specified by a discount factor and $v$ unknown (modeled by an 
+inverse-gamma prior).
+
+Figure \ref{fig:M0} summarizes the distribution of the parameters in $\M_0$.
 
 \beginmyfig
 \includegraphics[height=0.5\textwidth]{img/M0.pdf}
-\caption{Filtering, smoothing, and forecasting distributions of the polynomial trend model of order one fitted on the UCSC dataset.}
+\caption{$(\M_0)$ Filtering, smoothing, and forecasting distributions of the polynomial trend model of order one fitted on the UCSC dataset.}
 \label{fig:M0}
 \endmyfig
 
 
-## DLM Form
-FIXME
+## DLM Form for Model $\M_1$
 
-## Optimal $\hat\delta$
+To improve the model, $\M_1$ introduces a trend component as well as all the
+harmonic components into the time-invariant DLM. The resulting model is:
 
-Let $\delta = (\dt,\ds)$ be the discount factors for the trend and seasonal
-components respectively.
+$$
+\begin{array}{rcll}
+y_t &=& \bm{F}'\bm\theta_t + \nu_t, &\nu_t\sim \N(0,v) \\
+\bm\theta_t &=& \bm{G}\bm\theta_{t-1} + \bm{w_t}, &\bm{w_t}\sim \N(0,v\bm{W_t}) \\
+\end{array}
+$$
 
-Using the one-step-ahead forecasting distribution $Y_t | D_{t-1}$, which follows a
-$T$ distribution (the specific form is provided in the next section), the 
-observed predictive log-density can be computed as 
+where $\bm F' = (\bm{E}_2, \cdots, \bm{E}_2, 1)$, 
+$\bm G = \text{block-diagonal}\bc{\bm{J}_2(1), \bm{J}_2(1,\omega), \bm{J}_2(1,2\omega), \cdots, \bm{J}_2(1,5\omega), -1}$,
+$v$ is unknown and modeled by an inverse-gamma prior, and $W_t$ is specified by
+**two** discount factors -- one for the trend component ($\dt$) and the other
+for the harmonic components ($\ds$).
+
+
+## Optimal $\hat\delta$ for $\M_1$
+
+In selecting the optimal discount factors, let $\delta = (\dt,\ds)$ be the
+discount factors for the trend and seasonal components respectively.
+
+Using the one-step-ahead forecasting distribution $Y_t | D_{t-1}$, which
+follows a $T$ distribution, the observed predictive log-density can be computed
+as 
 
 $$\suml \log p(Y_t|D_{t-1}).$$
 
 Figure \ref{fig:delta} shows the observed predictive log-density for a 2-D grid
 of values for $\delta$. The $\delta$ which maximizes the log-density is
-approximately $\hat\delta = \bm{(.9,.95)}$.
+approximately $\hat\delta = \bm{(0.9,0.95)}$ (where the grey X-mark is).
 
 \beginmyfig
-\includegraphics[height=0.6\textwidth]{img/delta.pdf}
-\caption{Observed predictive Log density computed at different discount factors $\delta$}
+\includegraphics[height=0.8\textwidth]{img/delta.pdf}
+\caption{($\M_1$) Observed predictive Log density computed at different discount factors $\delta$}
 \label{fig:delta}
 \endmyfig
 
-$\hat\delta = (\widehat\dt, \widehat\ds) = (0.9,0.94)$.
-
-## Summary of Distributions
-
-This section summarizes the following distributions
-
-- Marginal Filtering Distributions $(\theta_t | D_t)$
-    - trend component
-    - each harmonic component
-- Marginal Smoothing Distribution $(\theta_t | D_T)$
-    - trend component
-    - each harmonic component
-- One-step ahead Forecast Distribution $(y_t \mid D_{t-1})$ for $t=1:T$
-- Forecast Distribution $(y_{T+k} \mid D_T)$, for $k=1:12$
+## Summary of Distributions ($\M_1$)
 
 Figure \ref{fig:dist1} summarizes the forecasting distributions (one-step ahead at
 each time and 12-step prediction) and the filtering and smoothing trend 
@@ -106,8 +123,8 @@ Moreover, the forecasting distributions capture the trend and seasonal nature
 of the data much better.
 
 \beginmyfig
-\includegraphics[height=0.6\textwidth]{img/dist1.pdf}
-\caption{One-step ahead $(y_t|D_{t-1})$ mean (red solid line). 12-step forecast mean (red dotted line). Filtering $(\theta_t|D_t)$ trend component mean (blue). Smoothing $(\theta_t|D_T)$ trend component mean (orange). All estimates are accompanied by 90\% credible intervals.}
+\includegraphics[height=0.5\textwidth]{img/dist1.pdf}
+\caption{($\M_1$) One-step ahead $(y_t|D_{t-1})$ mean (red solid line). 12-step forecast mean (red dotted line). Filtering $(\theta_t|D_t)$ trend component mean (blue). Smoothing $(\theta_t|D_T)$ trend component mean (orange). All estimates are accompanied by 90\% credible intervals.}
 \label{fig:dist1}
 \endmyfig
 
@@ -117,14 +134,14 @@ we see that the harmonic components are being captured with narrow credible
 intervals. The smoothing distribution has intervals which are more narrow.
 
 \beginmyfig
-\includegraphics[height=0.6\textwidth]{img/filtHarm.pdf}
-\caption{Harmonic Components of Filtering Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
+\includegraphics[height=0.5\textwidth]{img/filtHarm.pdf}
+\caption{($M_1$) Harmonic Components of Filtering Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
 \label{fig:filtHarm}
 \endmyfig
 
 \beginmyfig
-\includegraphics[height=0.6\textwidth]{img/smHarm.pdf}
-\caption{Harmonic Components of Smoothing Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
+\includegraphics[height=0.5\textwidth]{img/smHarm.pdf}
+\caption{($M_1$) Harmonic Components of Smoothing Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
 \label{fig:smHarm}
 \endmyfig
 
@@ -137,29 +154,105 @@ The table below provides the retention probabilities of each harmonic.
 
 \input{img/fprob.tex}
 
-Consequently, harmonics 1,2,5, and 6 (the Nyquist frequency) are kept in the 
-reduced model $(\mathcal{M}_2)$.
 
 
 ## Reduced Model ($\mathcal{M}_2$)
 
+Harmonics with high retention probabilities (1,2,5, and 6, according to the table
+above) are kept in a reduced model $\M_2$ (which is otherwise the same as $\M_1$).
+The optimal discount factors were computed using the same grid-search technique
+described previously to be $\hat\delta=(.91,.97)$ The same distributions
+previously summarized are now summarized for $\M_2$ in Figure \ref{fig:dist2}.
+
 \beginmyfig
-\includegraphics[height=0.6\textwidth]{img/dist2.pdf}
+\includegraphics[height=0.5\textwidth]{img/dist2.pdf}
 \caption{One-step ahead $(y_t|D_{t-1})$ mean (red solid line). 12-step forecast mean (red dotted line). Filtering $(\theta_t|D_t)$ trend component mean (blue). Smoothing $(\theta_t|D_T)$ trend component mean (orange). All estimates are accompanied by 90\% credible intervals.}
 \label{fig:dist2}
 \endmyfig
 
+The filtering and smoothing distribution of the harmonic components are
+summarized in Figures \ref{fig:filtHarm2} and \ref{fig:smHarm2} repectively.
+
 \beginmyfig
-\includegraphics[height=0.6\textwidth]{img/filtHarm2.pdf}
+\includegraphics[height=0.5\textwidth]{img/filtHarm2.pdf}
 \caption{Harmonic Components of Filtering Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
 \label{fig:filtHarm2}
 \endmyfig
 
 \beginmyfig
-\includegraphics[height=0.6\textwidth]{img/smHarm2.pdf}
+\includegraphics[height=0.5\textwidth]{img/smHarm2.pdf}
 \caption{Harmonic Components of Smoothing Distribution. The solid lines are the posterior means and the shaded regions are 90\% credible intervals}
 \label{fig:smHarm2}
 \endmyfig
+
+According to these figures, even with fewer parameters (harmonics), $\M_2$ and
+$\M_1$ provide similar inferences. This provides some justification for using a
+slightly more parsimonious model ($\M_2$).
+
+
+## DLM with Autoregressive State ($\M_3$)
+
+A DLM with an autoregressive state ($\M_3$) having the following form is now considered:
+
+$$
+\begin{array}{rcll}
+y_t &=& \alpha + \beta t + x_t + \epsilon_t, &\epsilon_t\sim \N(0,v) \\
+x_t &=& \sum_{j=1}^q \phi_j x_{t-1} + \nu_t, &\nu_t\sim \N(0,30) \\
+\end{array}
+$$
+
+with $\alpha\sim\N(0,vw)$ and $\beta\sim\N(0,vw)$. Furthermore, conjugate
+priors are chosen for $v,w$, and $\phi$. Specifically, $v\sim IG(.5,.5)$,
+$w\sim IG(2,1)$, and $p(\phi) \propto 1$ (which while not conjugate is amenable
+to a Gibbs update). 
+
+Rewriting the model as follows provides greater clarity on the model structure:
+
+$$
+\begin{array}{rcll}
+y_t &=& \bm{F}'\bm\theta_t + \epsilon_t, &\epsilon_t\sim \N(0,v) \\
+\bm\theta_t &=& \bm{G_\phi}\bm\theta_{t-1} + \bm{\nu_t}, &\bm{\nu_t}\sim \N(0,30\I_p) \\
+\end{array}
+$$
+
+with $\bm{F}' = (1,0,\cdots,0)$, $\bm G$ as written in equation (2.6) of 
+@prado2010time, and $\theta_t = (x_t,...,x_{t-q+1})'$
+. 
+
+### Sampling Scheme for $\M_3$
+
+The posterior distribution for the parameters in this model
+can be sampled from using MCMC. This can be achieved via Gibbs sampling by 
+iterating between the two conditional posteriors
+
+$$
+p(\theta_{1:T} \mid \bm{\phi}, v, \alpha, \beta, w, D_T) \leftrightarrow
+p(\bm{\phi}, v, \alpha, \beta, w\mid \theta_{1:T} , D_T).
+$$
+
+The forward filtering backward sampling (FFBS) algorithm 
+(by @fruhwirth1994data and @carter1994gibbs) can be used to sample from 
+$p(\theta_{1:T} \mid \bm{\phi}, v, \alpha, \beta, w, D_T)$.
+Since the full conditionals for each of the parameters on the right-hand side
+(above) are available in closed-form and is easy to sample from, they can simply
+be sampled from the full conditionals sequentially. Specifically,
+
+$$
+\begin{split}
+\alpha \mid \bm{\phi},\beta,v,w,\bm\theta_{1:T}, D_T &\sim \N\p{\frac{w\sum_{t=1}^T(y_t-\beta t - \bm{F}'\bm\theta_t)}{1+wT}, \frac{wv}{1+wT}}\\
+\beta \mid \bm{\phi},\alpha,v,w,\bm\theta_{1:T}, D_T &\sim \N\p{\frac{w\sum_{t=1}^T(y_t-\alpha - \bm{F}'\bm\theta_t)t}{1+w\sum_{t=1}^T t^2}, \frac{wv}{1+w\sum_{t=1}^T t^2}}\\
+v \mid \bm{\phi},\alpha,\beta,w,\bm\theta_{1:T}, D_T &\sim IG\p{a_v+\frac{T}{2},
+b+\frac{\sum_{t=1}^T(y_t-\alpha-\beta t - \bm{F}'\bm\theta_t)^2}{2}}\\
+w \mid \bm{\phi},\alpha,\beta,v,\bm\theta_{1:T}, D_T &\sim IG\p{a_w+1,b_w+\frac{\alpha^2+\beta^2}{2v}}\\
+\bm\phi \mid \alpha,\beta,v,w,\bm\theta_{1:T}, D_T &\sim\N_q
+\p{(\bm\theta_{t-1}'\bm\theta_{t-1})^{-1}\bm\theta_{t-1}\bm\theta_t, 
+30(\bm\theta_{t-1}'\bm\theta_{t-1})^{-1}}\\
+\end{split}
+$$
+
+### Distributional Summary for $\M_3$
+
+
 
 
 

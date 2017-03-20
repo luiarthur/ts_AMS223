@@ -79,7 +79,7 @@ ffbs <- function(y, q=2, B=2000, burn=1000, printFreq=100,
 
   samps <- gibbs(init, update.all, B, burn, printFreq)
 
-  list(samps=samps, dat=y)
+  list(samps=samps, dat=y, tau=tau)
 }
 
 to.arr <- function(ls_mat) {
@@ -88,4 +88,36 @@ to.arr <- function(ls_mat) {
   out <- array(NA, dim=c(mat.dim[1],mat.dim[2],N))
   for (i in 1:N) out[,,i] <- ls_mat[[i]]
   return(out)
+}
+
+
+forecast <- function(ffbs.out, nAhead=1, ci.level=.9) {
+  N <- length(ffbs.out$dat)
+  q <- ncol(ffbs.out$samp[[1]]$theta)
+  B <- length(ffbs.out$samps)
+  W <- diag(q) * ffbs.out$tau
+
+  FF <- matrix(c(1, rep(0,q-1)))
+  G <- function(phi,q=length(phi)) if (q>1) rbind(phi, cbind(diag(q-1),0)) else phi
+
+  theta <- to.arr(lapply(ffbs.out$samps, function(s) s$theta))
+  phi <- t(sapply(out$samps, function(s) s$phi)) #(Bxq)
+
+  theta <- to.arr(lapply(ffbs.out$samps, function(s) s$theta))
+  theta.last <- theta[N+1,,] # (qxB)
+
+  alpha <- sapply(out$samps, function(s) s$alpha)
+  beta <- sapply(out$samps, function(s) s$beta)
+  v <- sapply(out$samps, function(s) s$v)
+
+  f <- matrix(NA,nAhead,B)
+  for(i in 1:nAhead) {
+    a <- sapply(1:B, function(b) 
+                mvrnorm(0,W) + G(phi[b,]) %*% if (i==1) theta.last[,b] else a[,b])
+
+    f[i,] <- sapply(1:B, function(b) 
+                    alpha[b] + beta[b]*(N+i) + t(FF) %*% a[,b]) + rnorm(B,0,sqrt(v))
+  }
+
+  return(f)
 }
