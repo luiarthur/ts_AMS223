@@ -293,6 +293,17 @@ The plots show the posterior means with accompanying 95\% credible intervals.
 \label{fig:root}
 \endmyfig
 
+Note that I used $q=15$ because the partial autocorrelation of the
+of the data seemed to start tapper off at 15 lags. (In reality I would
+use a greater number of lags, but settled on 15 to reduce computation time.)
+Figure \ref{fig:pacf} shows the partial autocorrelation of the data.
+
+\beginmyfig
+\includegraphics[height=0.5\textwidth]{img/pacf.pdf}
+\caption{Partial autocorrelation function of UCSC data.}
+\label{fig:pacf}
+\endmyfig
+
 Figure \ref{fig:M3} summarizes the forecast distribution $(y_{T+12}|D_T)$.
 The dotted line represents the posterior mean and the red region is
 the accompanying 90\% credible interval. For comparison, the distribution
@@ -307,6 +318,11 @@ $(y_t | D_T)$ is also included.
 
 ## Discussion of $\M_1$, $\M_2$, and $\M_3$
 
+$\M_3$ appears to capture the trend of the process. Smoothing enables the process
+to capture the seasonal trends. However, compared to $\M_1$ and $\M_2$, it does
+not predict future observations as convincingly with seasonal behavior. 
+Moreover, computation time is much greater for $\M_3$ and has more parameters. 
+One may be more likely to favor the more parsimonious models $\M_2$.
 
 [//]: # ( example image embedding
 \beginmyfig
