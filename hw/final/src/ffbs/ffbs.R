@@ -132,7 +132,7 @@ G.roots <- function(ffbs.out) { # if all roots are complex
 
   # eigen values are reciprocal roots of characteristic polynomial when the
   # eigen values are distinct
-  Groot <- lapply(phi, function(p) 1/eigen(G(p))$values + 1E-10i)
+  Groot <- lapply(phi, function(p) eigen(G(p))$values + 1E-10i)
   mod <- sapply(Groot, function(r) Mod(r)) # REQUIRES pairs of complex roots!
   arg <- sapply(Groot, function(r) Arg(r)) # REQUIRES pairs of complex roots!
 

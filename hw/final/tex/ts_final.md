@@ -253,7 +253,7 @@ $$
 ### Distributional Summary for $\M_3$
 
 Figure \ref{fig:x} provides the posterior mean (solid line) and 90\% credible
-interval (grey region) for $x_t$ for $t=1:T$.
+interval (grey region) for $x_t$ for $t=1:T$. The process appears stationary.
 
 \beginmyfig
 \includegraphics[height=0.5\textwidth]{img/x.pdf}
@@ -274,8 +274,8 @@ The equal-tailed 95\% credible intervals for $\alpha$ and $\beta$ are
 Figure \ref{fig:vw} provides the posterior distribution for $(v,w)$.  The
 equal-tailed 95\% credible intervals for $v$ and $w$ are (20,45) and
 (15,221) respectively. The prior variance $w$ (for $\alpha,\beta$) being
-large is reasonably as the prior mean for $(\alpha,\beta)$ was 0, but their
-posterior means were very far from 0.
+large is reasonably as the prior mean for $(\alpha,\beta)$ was 0, but the
+posterior mean for $\alpha$ was very far from 0.
 
 \beginmyfig
 \includegraphics[height=0.5\textwidth]{img/vw.pdf}

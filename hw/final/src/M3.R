@@ -22,7 +22,7 @@ pacf(ucsc)
 dev.off()
 
 system.time( # 2000 iterations: quick for q=2,  11 minus (q=15)
-out <- ffbs(ucsc,q=15,B=2000,burn=5000,printFreq=100)
+out <- ffbs(ucsc,q=15,B=2000,burn=10000,printFreq=100)
 )
 
 alpha <- sapply(out$samps, function(s) s$alpha)
@@ -87,9 +87,9 @@ dev.off()
 ### Eigen
 Groot <- G.roots(out)
 Groot.mod.mean <- apply(Groot$mod,1,mean)
-Groot.arg.mean <- apply(2*pi/Groot$arg,1,mean)
+Groot.arg.mean <- apply(Groot$arg,1,mean)
 Groot.mod.ci <- apply(Groot$mod,1,quantile,c(.05,.95))
-Groot.arg.ci <- apply(2*pi/Groot$arg,1,quantile,c(.05,.95))
+Groot.arg.ci <- apply(Groot$arg,1,quantile,c(.05,.95))
 ord <- order(Groot.arg.mean)
 
 pdf('../tex/img/root.pdf',w=13,h=7)
