@@ -133,8 +133,13 @@ G.roots <- function(ffbs.out) { # if all roots are complex
   # eigen values are reciprocal roots of characteristic polynomial when the
   # eigen values are distinct
   Groot <- lapply(phi, function(p) eigen(G(p))$values + 1E-10i)
-  mod <- sapply(Groot, function(r) Mod(r)) # REQUIRES pairs of complex roots!
-  arg <- sapply(Groot, function(r) Arg(r)) # REQUIRES pairs of complex roots!
+  #mod <- sapply(Groot, function(r) Mod(r)) # REQUIRES pairs of complex roots!
+  #arg <- sapply(Groot, function(r) Arg(r)) # REQUIRES pairs of complex roots!
+  modarg <- lapply(Groot, function(r) {
+    ord <- order(Arg(r))
+    cbind(Mod(r)[ord], Arg(r)[ord])
+  }) # REQUIRES pairs of complex roots!
 
-  list(mod=mod, arg=arg)
+  modarg.mat <- to.arr(modarg)
+  list(mod=modarg.mat[,1,], arg=modarg.mat[,2,])
 }
