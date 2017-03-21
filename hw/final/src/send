@@ -1,0 +1,21 @@
+#!/bin/bash
+
+username="alui2"
+server="citrisdance"
+
+# send
+ssh -Y $username@$server.soe.ucsc.edu <<-EOSSH
+  source /soe/alui2/.bashrc
+  cd ~/repo/ts_AMS223/hw/final/src
+  git pull
+  Rscript M3.R
+EOSSH
+
+# get
+cd ../img
+sftp $username@$server.soe.ucsc.edu <<-EOSSH
+  get -r ~/repo/ts_AMS223/hw/final/tex/img tmp
+EOSSH
+#mv -f tmp/* ./
+#rm -rf tmp
+
