@@ -14,8 +14,8 @@ server="citrisdance"
 # get
 cd ../tex/img
 sftp $username@$server.soe.ucsc.edu <<-EOSSH
-  get -r ~/repo/ts_AMS223/hw/final/tex/img tmp
+  get -r repo/ts_AMS223/hw/final/tex/img tmp
 EOSSH
-#mv -f tmp/* ./
-#rm -rf tmp
+mv -f tmp/* ./
+rm -rf tmp
 

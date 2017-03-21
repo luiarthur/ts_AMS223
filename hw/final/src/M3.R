@@ -22,7 +22,7 @@ pacf(ucsc)
 dev.off()
 
 system.time( # 2000 iterations: quick for q=2,  11 minus (q=15)
-out <- ffbs(ucsc,q=2,B=200,burn=2000,printFreq=100)
+out <- ffbs(ucsc,q=15,B=2000,burn=20000,printFreq=100)
 )
 
 alpha <- sapply(out$samps, function(s) s$alpha)
