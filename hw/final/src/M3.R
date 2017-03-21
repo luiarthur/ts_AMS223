@@ -61,7 +61,7 @@ dev.off()
 # Prediction
 trend <- sapply(out$samps, function(s) s$a + s$b*1:N)
 pred.mean <- apply(trend,1,mean)+theta.mean[-1,1]
-pred.ci <- apply(trend,1,quantile,c(.05,.95)) + theta.ci[,-1,2]
+pred.ci <- apply(trend,1,quantile,c(.05,.95)) + theta.ci[,-1,1]
 
 pdf('../tex/img/M3.pdf',w=13,h=7)
 plot(0,0, xlim=c(0,N+nAhead), ylim=c(0,100), type='n',bty='n',
