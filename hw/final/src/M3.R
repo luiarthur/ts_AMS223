@@ -101,4 +101,4 @@ add.errbar(t(Groot.mod.ci))
 par(mfrow=c(1,1),mar=mar.default,oma=oma.default)
 dev.off()
 
-
+save.image(".RData")
