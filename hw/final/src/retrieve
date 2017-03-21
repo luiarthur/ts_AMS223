@@ -4,12 +4,12 @@ username="alui2"
 server="citrisdance"
 
 # send
-ssh -Y $username@$server.soe.ucsc.edu <<-EOSSH
-  source /soe/alui2/.bashrc
-  cd ~/repo/ts_AMS223/hw/final/src
-  git pull
-  Rscript M3.R
-EOSSH
+#ssh -Y $username@$server.soe.ucsc.edu <<-EOSSH
+#  source /soe/alui2/.bashrc
+#  cd ~/repo/ts_AMS223/hw/final/src
+#  git pull
+#  Rscript M3.R
+#EOSSH
 
 # get
 cd ../tex/img
