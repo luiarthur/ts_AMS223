@@ -1,4 +1,3 @@
-library(msm) # rtnorm (truncated normal)
 library(dlm)
 source('Gibbs.R')
 

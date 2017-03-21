@@ -12,7 +12,7 @@ ssh -Y $username@$server.soe.ucsc.edu <<-EOSSH
 EOSSH
 
 # get
-cd ../img
+cd ../tex/img
 sftp $username@$server.soe.ucsc.edu <<-EOSSH
   get -r ~/repo/ts_AMS223/hw/final/tex/img tmp
 EOSSH
